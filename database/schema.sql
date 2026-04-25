@@ -2,13 +2,16 @@ SET foreign_key_checks = 0;
 
 DROP TABLE IF EXISTS users;
 
-CREATE TABLE users (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    email VARCHAR(50) NOT NULL,
-    encrypted_password VARCHAR(255) NOT NULL,
-    avatar_name VARCHAR(65),
-    UNIQUE KEY uq_users_email (email)
-) ENGINE=InnoDB;
+CREATE OR REPLACE TABLE `users` (
+	`id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
+	`username` VARCHAR(64) NOT NULL,
+	`email` VARCHAR(64) NOT NULL UNIQUE,
+	`password` VARCHAR(255) NOT NULL,
+	`avatar` VARCHAR(255),
+	`admin` DECIMAL(1) NOT NULL,
+	`created_at` TIMESTAMP NOT NULL,
+	`updated_at` TIMESTAMP,
+	PRIMARY KEY(`id`)
+); ENGINE=InnoDB;
 
 SET foreign_key_checks = 1;
