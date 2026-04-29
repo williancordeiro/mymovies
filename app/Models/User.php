@@ -7,22 +7,23 @@ use Core\Database\ActiveRecord\Model;
 
 /**
  * @property int $id
- * @property string $name
+ * @property string $username
  * @property string $email
  * @property string $encrypted_password
- * @property string $avatar_name
+ * @property string $avatar_file
+ * @property string $admin
+ * @property string $created_at
+ * @property string $updated_at
  */
-class User extends Model
-{
+class User extends Model {
     protected static string $table = 'users';
-    protected static array $columns = ['name', 'email', 'encrypted_password', 'avatar_name'];
+    protected static array $columns = ['username', 'email', 'encrypted_password', 'avatar_file', 'admin', 'created_at', 'updated_at'];
 
     protected ?string $password = null;
     protected ?string $password_confirmation = null;
 
-    public function validates(): void
-    {
-        Validations::notEmpty('name', $this);
+    public function validates(): void {
+        Validations::notEmpty('username', $this);
         Validations::notEmpty('email', $this);
 
         Validations::uniqueness('email', $this);
@@ -32,8 +33,7 @@ class User extends Model
         }
     }
 
-    public function authenticate(string $password): bool
-    {
+    public function authenticate(string $password): bool {
         if ($this->encrypted_password == null) {
             return false;
         }
@@ -41,13 +41,11 @@ class User extends Model
         return password_verify($password, $this->encrypted_password);
     }
 
-    public static function findByEmail(string $email): User | null
-    {
+    public static function findByEmail(string $email): User | null {
         return User::findBy(['email' => $email]);
     }
 
-    public function __set(string $property, mixed $value): void
-    {
+    public function __set(string $property, mixed $value): void {
         parent::__set($property, $value);
 
         if (
