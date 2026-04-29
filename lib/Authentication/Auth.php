@@ -3,31 +3,48 @@
 namespace Lib\Authentication;
 
 use App\Models\User;
+use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
+use Exception;
 
-class Auth
-{
-    public static function login($user): void
-    {
-        $_SESSION['user']['id'] = $user->id;
+class Auth {
+    
+    private static ?string $key = null;
+    private static string $algorithm = 'HS256';
+
+    private static function getKey(): string {
+        if (self::$key === null)
+            self::$key = $_ENV['JWT_SECRET'] ?? 'default_secret';
+
+        return self::$key;
     }
 
-    public static function user(): ?User
-    {
-        if (isset($_SESSION['user']['id'])) {
-            $id = $_SESSION['user']['id'];
-            return User::findById($id);
+    public static function generateToken(User $user): string {
+        $playload = [
+            'iss' => 'mymovies',
+            'iat' => time(),
+            'exp' => time() + (60 * 60 * 24),
+            'sub' => $user->id,
+            'email' => $user->email,
+            'username' => $user->username
+        ];
+
+        return JWT::encode($playload, self::getKey(), self::$algorithm);
+    }
+
+    public static function validateToken(string $token): ?object {
+        try {
+            return JWT::decode($token, new Key(self::getKey(), self::$algorithm));
+        } catch (Exception $e) {
+            return null;
         }
+    }
 
+    public static function user(string $token): ?User {
+        $decoded = self::validateToken($token);
+        if ($decoded && isset($decoded->sub)) {
+            return User::findById($decoded->sub);
+        }
         return null;
-    }
-
-    public static function check(): bool
-    {
-        return isset($_SESSION['user']['id']) && self::user() !== null;
-    }
-
-    public static function logout(): void
-    {
-        unset($_SESSION['user']['id']);
     }
 }
