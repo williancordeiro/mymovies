@@ -7,3 +7,5 @@ use Core\Router\Route;
 // Authentication
 Route::get('/', [HomeController::class, 'index'])->name('root');
 Route::post('/auth/login', [UserController::class, 'login']);
+
+Route::get('/admin', [AdminController::class, 'index']);
