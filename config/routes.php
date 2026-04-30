@@ -2,6 +2,7 @@
 
 use App\Controllers\HomeController;
 use App\Controllers\UserController;
+use App\Controllers\AdminController;
 use Core\Router\Route;
 
 // Authentication

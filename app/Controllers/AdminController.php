@@ -4,11 +4,11 @@ namespace App\Controllers;
 
 use Core\Http\Controllers\Controller;
 
-class HomeController extends Controller
+class AdminController extends Controller
 {
     public function index(): void
     {
-        $title = 'Home Page';
+        $title = 'Admin Page';
         $this->render('admin/index', compact('title'));
     }
 }
