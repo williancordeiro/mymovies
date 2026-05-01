@@ -26,7 +26,8 @@ class Auth {
             'exp' => time() + (60 * 60 * 24),
             'sub' => $user->id,
             'email' => $user->email,
-            'username' => $user->username
+            'username' => $user->username,
+            'admin' => $user->admin
         ];
 
         return JWT::encode($playload, self::getKey(), self::$algorithm);
