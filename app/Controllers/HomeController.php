@@ -11,4 +11,9 @@ class HomeController extends Controller
         $title = 'Home Page';
         $this->render('admin/index', compact('title'));
     }
+
+    public function flash(): void
+    {
+        $this->json([]);
+    }
 }
