@@ -28,6 +28,7 @@ class UserController extends Controller
         if ($user && $user->authenticate($password)) {
             $token = Auth::generateToken($user);
 
+            \Lib\FlashMessage::success('O login foi um sucesso');
             $this->json([
                 'token' => $token,
                 'user' => [
