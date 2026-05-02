@@ -7,8 +7,8 @@ use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use Exception;
 
-class Auth {
-    
+class Auth
+{
     private static ?string $key = null;
     private static string $algorithm = 'HS256';
 
@@ -19,7 +19,8 @@ class Auth {
         return self::$key;
     }
 
-    public static function generateToken(User $user): string {
+    public static function generateToken(User $user): string
+    {
         $playload = [
             'iss' => 'mymovies',
             'iat' => time(),
@@ -33,7 +34,8 @@ class Auth {
         return JWT::encode($playload, self::getKey(), self::$algorithm);
     }
 
-    public static function validateToken(string $token): ?object {
+    public static function validateToken(string $token): ?object
+    {
         try {
             return JWT::decode($token, new Key(self::getKey(), self::$algorithm));
         } catch (Exception $e) {
@@ -41,7 +43,8 @@ class Auth {
         }
     }
 
-    public static function user(string $token): ?User {
+    public static function user(string $token): ?User
+    {
         $decoded = self::validateToken($token);
         if ($decoded && isset($decoded->sub)) {
             return User::findById($decoded->sub);

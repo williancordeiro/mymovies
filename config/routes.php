@@ -10,6 +10,6 @@ Route::get('/', [HomeController::class, 'index'])->name('root');
 Route::get('/flash', [HomeController::class, 'flash']);
 Route::post('/auth/login', [UserController::class, 'login']);
 
-Route::middleware('auth')->group(function () {
+Route::middleware('admin')->group(function () {
     Route::get('/admin', [AdminController::class, 'index']);
 });
