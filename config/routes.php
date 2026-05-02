@@ -9,6 +9,6 @@ use Core\Router\Route;
 Route::get('/', [HomeController::class, 'index'])->name('root');
 Route::post('/auth/login', [UserController::class, 'login']);
 
-Route::middleware('auth')->group(function () {
+Route::middleware('admin')->group(function () {
     Route::get('/admin', [AdminController::class, 'index']);
 });
