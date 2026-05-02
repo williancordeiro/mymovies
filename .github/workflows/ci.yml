@@ -42,7 +42,12 @@ jobs:
 
       - name: Setup development database
         run: |
-          docker compose exec -T db mariadb -u root -e "CREATE DATABASE IF NOT EXISTS problem_development;"
+          docker compose exec -T db mariadb -u root -e "
+            CREATE DATABASE IF NOT EXISTS problem_development;
+            CREATE USER IF NOT EXISTS 'problem-user'@'%' IDENTIFIED BY 'problem-pwd';
+            GRANT ALL PRIVILEGES ON problem_development.* TO 'problem-user'@'%';
+            FLUSH PRIVILEGES;
+          "
           ./run db:reset
           ./run db:populate
 
