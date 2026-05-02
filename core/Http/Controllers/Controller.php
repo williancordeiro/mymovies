@@ -12,20 +12,26 @@ class Controller
 
     protected ?User $current_user = null;
 
-    public function __construct() {}
+    public function __construct()
+    {
+    }
 
-    public function currentUser(): ?User {
+    public function currentUser(): ?User
+    {
         if ($this->current_user === null) {
-            $this->current_user = Auth::user();
+            $token = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
+            if (preg_match('/Bearer\s(\S+)/', $token, $matches)) {
+                $this->current_user = Auth::user($matches[1]);
+            }
         }
-
         return $this->current_user;
     }
 
     /**
      * @param array<string, mixed> $data
      */
-    protected function render(string $view, array $data = []): void {
+    protected function render(string $view, array $data = []): void
+    {
         extract($data);
 
         $view = Constants::rootPath()->join('app/views/' . $view . '.phtml');
@@ -36,7 +42,8 @@ class Controller
     /**
      * @param array<string, mixed> $data
      */
-    protected function renderJson(string $view, array $data = []): void {
+    protected function renderJson(string $view, array $data = []): void
+    {
         extract($data);
 
         $view = Constants::rootPath()->join('app/views/' . $view . '.json.php');
@@ -48,18 +55,24 @@ class Controller
         return;
     }
 
-    protected function json(array $data, int $status = 200): void {
+    /**
+     * @param array<string, mixed> $data
+    */
+    protected function json(array $data, int $status = 200): void
+    {
         header('Content-Type: application/json; charset=utf-8', true, $status);
         echo json_encode($data);
         return;
     }
 
-    protected function redirectTo(string $location): void {
+    protected function redirectTo(string $location): void
+    {
         header('Location: ' . $location);
         exit;
     }
 
-    protected function redirectBack(): void {
+    protected function redirectBack(): void
+    {
         $referer = $_SERVER['HTTP_REFERER'] ?? '/';
         $this->redirectTo($referer);
     }
