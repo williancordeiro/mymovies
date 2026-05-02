@@ -18,6 +18,9 @@ jobs:
       - name: Create .env
         run: cp .env.example .env
 
+      - name: Create .env.testing
+        run: cp .env.testing.example .env.testing
+
       - name: Composer install
         run: ./run composer install
 
