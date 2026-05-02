@@ -1,6 +1,6 @@
 services:
   nginx:
-    build: 
+    build:
       context: .
       dockerfile: docker/nginx/Dockerfile
     volumes:
@@ -14,7 +14,7 @@ services:
     depends_on:
       - php
       - php_test
-      
+
   php:
     build:
       context: .
@@ -67,13 +67,8 @@ services:
     depends_on:
       - db
       - selenium
-    environment:
-      APP_ENV: testing
-      DB_HOST: db
-      DB_PORT: 3306
-      DB_DATABASE: problem_test
-      DB_USERNAME: root
-      DB_PASSWORD: ""
+    env_file:
+      - .env.testing
 
 networks:
   app-network:
