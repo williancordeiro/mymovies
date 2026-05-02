@@ -1,10 +1,13 @@
-FROM php:8.3.4-fpm
+FROM php:8.3-fpm-alpine
 
-RUN docker-php-ext-install pdo pdo_mysql
-RUN docker-php-ext-enable pdo_mysql
+RUN apk add --no-cache \
+    libzip-dev \
+    zip \
+    unzip \
+    libxml2-dev \
+    git
 
-RUN apt-get update -y && apt-get install -y libzip-dev zip unzip libxml2-dev git
-RUN docker-php-ext-install zip dom xml
+RUN docker-php-ext-install pdo_mysql zip dom xml
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 

@@ -49,6 +49,10 @@ class Controller
     }
 
     protected function json(array $data, int $status = 200): void {
+        $flash = \Lib\FlashMessage::get();
+        if (!empty($flash)) {
+            $data['flash'] = $flash;
+        }
         header('Content-Type: application/json; charset=utf-8', true, $status);
         echo json_encode($data);
         return;
