@@ -12,9 +12,11 @@ class Auth
     private static ?string $key = null;
     private static string $algorithm = 'HS256';
 
-    private static function getKey(): string {
-        if (self::$key === null)
+    private static function getKey(): string
+    {
+        if (self::$key === null) {
             self::$key = $_ENV['JWT_SECRET'] ?? 'default_secret_key_with_32_characters_';
+        }
 
         return self::$key;
     }

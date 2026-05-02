@@ -82,6 +82,12 @@ jobs:
             sleep 2
           done
 
+      - name: Setup development database
+        run: |
+          docker compose exec -T db mariadb -u root -e "CREATE DATABASE IF NOT EXISTS problem_development;"
+          ./run db:reset
+          ./run db:populate
+
       - name: See containers
         run: ./run ps
 
