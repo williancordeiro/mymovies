@@ -17,6 +17,12 @@ class UserController extends Controller
         $email = $data['email'] ?? $request->getParam('email');
         $password = $data['password'] ?? $request->getParam('password');
 
+        if (!$email || !$password) {
+            \Lib\FlashMessage::danger('E-mail e senha são obrigatórios!');
+            $this->json(['error' => 'E-mail e senha são obrigatórios'], 400);
+            return;
+        }
+
         $user = User::findByEmail($email);
 
         if ($user && $user->authenticate($password)) {
@@ -34,6 +40,7 @@ class UserController extends Controller
             return;
         }
 
+        \Lib\FlashMessage::danger('Credenciais inválidas!');
         $this->json(['error' => 'E-mail ou senha inválidos'], 401);
     }
 }

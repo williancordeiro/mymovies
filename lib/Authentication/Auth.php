@@ -12,11 +12,9 @@ class Auth
     private static ?string $key = null;
     private static string $algorithm = 'HS256';
 
-    private static function getKey(): string
-    {
-        if (self::$key === null) {
-            self::$key = $_ENV['JWT_SECRET'] ?? 'default_secret';
-        }
+    private static function getKey(): string {
+        if (self::$key === null)
+            self::$key = $_ENV['JWT_SECRET'] ?? 'default_secret_key_with_32_characters_';
 
         return self::$key;
     }
@@ -30,6 +28,7 @@ class Auth
             'sub' => $user->id,
             'email' => $user->email,
             'username' => $user->username,
+            'admin' => (int) $user->admin
         ];
 
         return JWT::encode($playload, self::getKey(), self::$algorithm);
