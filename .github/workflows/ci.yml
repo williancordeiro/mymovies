@@ -40,6 +40,12 @@ jobs:
             sleep 2
           done
 
+      - name: Setup development database
+        run: |
+          docker compose exec -T db mariadb -u root -e "CREATE DATABASE IF NOT EXISTS problem_development;"
+          ./run db:reset
+          ./run db:populate
+
       - name: PHPUnit Units test
         run: ./run test tests/Unit
 
