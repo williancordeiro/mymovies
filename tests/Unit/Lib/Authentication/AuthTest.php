@@ -2,61 +2,69 @@
 
 namespace Tests\Unit\Lib\Authentication;
 
-use Lib\Authentication\Auth;
 use App\Models\User;
+use Core\Env\EnvLoader;
+use Database\Populate\UsersPopulate;
+use Lib\Authentication\Auth;
 use Tests\TestCase;
 
 class AuthTest extends TestCase
 {
     private User $user;
+    private User $admin;
 
     public function setUp(): void
     {
         parent::setUp();
-        $_SESSION = [];
-        $this->user = new User([
-            'name' => 'User 1',
-            'email' => 'fulano@example.com',
-            'password' => '123456',
-            'password_confirmation' => '123456'
-        ]);
-        $this->user->save();
+        EnvLoader::init();
+        UsersPopulate::populate();
+
+        $this->user = User::findByEmail('example@email.com');
+        $this->admin = User::findByEmail('admin@email.com');
     }
 
-    public function tearDown(): void
+    public function test_should_generate_token_for_user(): void
     {
-        parent::setUp();
-        $_SESSION = [];
+        $token = Auth::generateToken($this->user);
+        $this->assertNotEmpty($token);
+        $this->assertStringContainsString('.', $token);
     }
 
-    public function test_login(): void
+    public function test_should_validate_token(): void
     {
-        Auth::login($this->user);
-
-        $this->assertEquals(1, $_SESSION['user']['id']);
+        $token = Auth::generateToken($this->user);
+        $decoded = Auth::validateToken($token);
+        $this->assertNotNull($decoded);
+        $this->assertEquals($this->user->id, $decoded->sub);
+        $this->assertEquals($this->user->email, $decoded->email);
     }
 
-    public function test_user(): void
+    public function test_should_return_null_for_invalid_token(): void
     {
-        Auth::login($this->user);
-
-        $userFromSession = Auth::user();
-
-        $this->assertEquals($this->user->id, $userFromSession->id);
+        $decoded = Auth::validateToken('invalid.token.here');
+        $this->assertNull($decoded);
     }
 
-    public function test_check(): void
+    public function test_should_return_user_from_token(): void
     {
-        Auth::login($this->user);
-
-        $this->assertTrue(Auth::check());
+        $token = Auth::generateToken($this->user);
+        $user = Auth::user($token);
+        $this->assertNotNull($user);
+        $this->assertEquals($this->user->id, $user->id);
+        $this->assertEquals($this->user->email, $user->email);
     }
 
-    public function test_logout(): void
+    public function test_should_return_null_user_for_invalid_token(): void
     {
-        Auth::login($this->user);
-        Auth::logout();
+        $user = Auth::user('invalid.token.here');
+        $this->assertNull($user);
+    }
 
-        $this->assertFalse(Auth::check());
+    public function test_token_should_contain_admin_email(): void
+    {
+        $token = Auth::generateToken($this->admin);
+        $decoded = Auth::validateToken($token);
+        $this->assertNotNull($decoded);
+        $this->assertEquals($this->admin->email, $decoded->email);
     }
 }

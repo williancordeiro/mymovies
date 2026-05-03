@@ -14,15 +14,16 @@ class Controller
 
     public function __construct()
     {
-        $this->current_user = Auth::user();
     }
 
     public function currentUser(): ?User
     {
         if ($this->current_user === null) {
-            $this->current_user = Auth::user();
+            $token = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
+            if (preg_match('/Bearer\s(\S+)/', $token, $matches)) {
+                $this->current_user = Auth::user($matches[1]);
+            }
         }
-
         return $this->current_user;
     }
 
@@ -51,6 +52,20 @@ class Controller
         header('Content-Type: application/json; chartset=utf-8');
         require $view;
         echo json_encode($json);
+        return;
+    }
+
+    /**
+     * @param array<string, mixed> $data
+    */
+    protected function json(array $data, int $status = 200): void
+    {
+        $flash = \Lib\FlashMessage::get();
+        if (!empty($flash)) {
+            $data['flash'] = $flash;
+        }
+        header('Content-Type: application/json; charset=utf-8', true, $status);
+        echo json_encode($data);
         return;
     }
 

@@ -18,6 +18,9 @@ jobs:
       - name: Create .env
         run: cp .env.example .env
 
+      - name: Create .env.testing
+        run: cp .env.testing.example .env.testing
+
       - name: Composer install
         run: ./run composer install
 
@@ -29,6 +32,19 @@ jobs:
 
       - name: Up containers
         run: ./run up -d
+
+      - name: Wait for database
+        run: |
+          until docker compose exec -T db mariadb -u root -e "SELECT 1" &>/dev/null; do
+            echo "Waiting for database..."
+            sleep 2
+          done
+
+      - name: Setup development database
+        run: |
+          docker compose exec -T db mariadb -u root -e "CREATE DATABASE IF NOT EXISTS problem_development;"
+          ./run db:reset
+          ./run db:populate
 
       - name: PHPUnit Units test
         run: ./run test tests/Unit
@@ -53,6 +69,9 @@ jobs:
       - name: Create .env
         run: cp .env.example .env
 
+      - name: Create .env.testing
+        run: cp .env.testing.example .env.testing
+
       - name: Composer install
         run: ./run composer install
 
@@ -61,6 +80,19 @@ jobs:
 
       - name: Up containers
         run: ./run up -d
+
+      - name: Wait for database
+        run: |
+          until docker compose exec -T db mariadb -u root -e "SELECT 1" &>/dev/null; do
+            echo "Waiting for database..."
+            sleep 2
+          done
+
+      - name: Setup development database
+        run: |
+          docker compose exec -T db mariadb -u root -e "CREATE DATABASE IF NOT EXISTS problem_development;"
+          ./run db:reset
+          ./run db:populate
 
       - name: See containers
         run: ./run ps
@@ -79,6 +111,9 @@ jobs:
 
       - name: Create .env
         run: cp .env.example .env
+
+      - name: Create .env.testing
+        run: cp .env.testing.example .env.testing
 
       - name: Composer install
         run: ./run composer install

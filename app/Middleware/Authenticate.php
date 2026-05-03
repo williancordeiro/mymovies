@@ -5,21 +5,36 @@ namespace App\Middleware;
 use Core\Http\Middleware\Middleware;
 use Core\Http\Request;
 use Lib\Authentication\Auth;
-use Lib\FlashMessage;
 
 class Authenticate implements Middleware
 {
     public function handle(Request $request): void
     {
-        if (!Auth::check()) {
-            FlashMessage::danger('Você deve estar logado para acessar essa página');
-            $this->redirectTo(route('users.login'));
+        $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
+        $token = null;
+
+        if (preg_match('/Bearer\s(\S+)/', $authHeader, $matches)) {
+            $token = $matches[1];
+        }
+
+        if (!$token || !Auth::validateToken($token)) {
+            $this->unauthorized();
         }
     }
 
-    private function redirectTo(string $location): void
+    protected function unauthorized(): void
     {
-        header('Location: ' . $location);
+        header('Content-Type: application/json');
+        http_response_code(401);
+        echo json_encode(['error' => 'Token inválido ou ausente']);
+        exit;
+    }
+
+    protected function forbidden(): void
+    {
+        header('Content-Type: application/json');
+        http_response_code(403);
+        echo json_encode(['error' => 'Acesso negado']);
         exit;
     }
 }

@@ -1,24 +1,26 @@
 services:
-  web:
-    image: nginx:latest
-    working_dir: /var/www
+  nginx:
+    build:
+      context: .
+      dockerfile: docker/nginx/Dockerfile
     volumes:
       - .:/var/www
       - ./server/nginx.conf:/etc/nginx/conf.d/default.conf
     ports:
-      - 80:80
-      - 8080:8080
+      - 3000:80
+      - 9000:8080
     networks:
       - app-network
     depends_on:
       - php
       - php_test
-      
+
   php:
     build:
       context: .
-      dockerfile: Dockerfile
-    working_dir: /var/www
+      dockerfile: docker/php/Dockerfile
+    env_file:
+      - .env
     volumes:
       - .:/var/www
       - ./php/uploads.ini:/usr/local/etc/php/conf.d/uploads.ini
@@ -28,14 +30,18 @@ services:
       - db
 
   db:
-    image: mysql:8.4.0
+    build:
+      context: .
+      dockerfile: docker/mariadb/Dockerfile
     env_file:
       - .env
     environment:
-      MYSQL_DATABASE: "$DB_DATABASE"
-      MYSQL_USER: "$DB_USERNAME"
-      MYSQL_PASSWORD: "$DB_PASSWORD"
-      MYSQL_ALLOW_EMPTY_PASSWORD: yes
+      MARIADB_DATABASE: "$DB_DATABASE"
+      MARIADB_USER: "$DB_USERNAME"
+      MARIADB_PASSWORD: "$DB_PASSWORD"
+      MARIADB_ALLOW_EMPTY_ROOT_PASSWORD: 1
+    ports:
+      - 3307:3306
     volumes:
       - dbdata:/var/lib/mysql
     networks:
@@ -52,8 +58,7 @@ services:
   php_test:
     build:
       context: .
-      dockerfile: Dockerfile
-    working_dir: /var/www
+      dockerfile: docker/php/Dockerfile
     volumes:
       - .:/var/www
       - ./php/uploads.ini:/usr/local/etc/php/conf.d/uploads.ini
@@ -62,13 +67,8 @@ services:
     depends_on:
       - db
       - selenium
-    environment:
-      APP_ENV: testing
-      DB_HOST: db
-      DB_PORT: 3306
-      DB_DATABASE: problem_test
-      DB_USERNAME: root
-      DB_PASSWORD: ""
+    env_file:
+      - .env.testing
 
 networks:
   app-network:

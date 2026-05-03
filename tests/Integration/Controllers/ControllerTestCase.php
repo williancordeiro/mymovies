@@ -6,6 +6,7 @@ use Core\Constants\Constants;
 use Core\Http\Request;
 use Core\Router\Router;
 use Tests\TestCase;
+use Core\Env\EnvLoader;
 
 abstract class ControllerTestCase extends TestCase
 {
@@ -13,6 +14,7 @@ abstract class ControllerTestCase extends TestCase
 
     public function setUp(): void
     {
+        EnvLoader::init();
         parent::setUp();
         Router::reset();
         require Constants::rootPath()->join('config/routes.php');
