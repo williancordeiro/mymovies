@@ -12,7 +12,6 @@ class AdminAccessTest extends BaseAccessTestCase
         $this->assertEquals(200, $response->getStatusCode());
     }
 
-    // 2.1 - Rota autenticada, acessada somente por usuários autenticados
     public function test_should_not_access_admin_route_without_token(): void
     {
         $response = $this->client->get('/admin');
@@ -45,7 +44,6 @@ class AdminAccessTest extends BaseAccessTestCase
         $this->assertEquals(200, $response->getStatusCode());
     }
 
-    // 2.3 - Rota pública que não deve permitir usuários autenticados
     public function test_login_route_should_be_accessible_without_token(): void
     {
         $response = $this->client->post('/auth/login', [
