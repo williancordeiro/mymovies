@@ -44,4 +44,9 @@ class UserController extends Controller
         \Lib\FlashMessage::danger('Credenciais inválidas!');
         $this->json(['error' => 'E-mail ou senha inválidos'], 401);
     }
+
+    public function logout(Request $request): void
+    {
+            $this->json(['message' => 'Logout realizado com sucesso'], 200);
+    }
 }
