@@ -20,6 +20,8 @@ class AdminControllerTest extends ControllerTestCase
             controllerName: 'App\Controllers\AdminController'
         );
 
-        $this->assertStringContainsString('Admin Page', $response);
+        $data = json_decode($response, true);
+        $this->assertArrayHasKey('message', $data);
+        $this->assertEquals('Admin area', $data['message']);
     }
 }
