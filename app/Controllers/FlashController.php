@@ -4,7 +4,7 @@ namespace App\Controllers;
 
 use Core\Http\Controllers\Controller;
 
-class AdminController extends Controller
+class FlashController extends Controller
 {
     public function flash(): void
     {
