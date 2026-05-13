@@ -2,6 +2,7 @@
 
 use App\Controllers\UserController;
 use App\Controllers\AdminController;
+use App\Controllers\HomeController;
 use Core\Router\Route;
 
 Route::post('/auth/login', [UserController::class, 'login']);
@@ -15,4 +16,7 @@ Route::middleware('editor')->group(function () {
 });
 Route::middleware('auth')->group(function () {
     Route::post('/auth/logout', [UserController::class, 'logout']);
+});
+Route::middleware('auth')->group(function () {
+    Route::get('/', [HomeController::class, 'index']);
 });
