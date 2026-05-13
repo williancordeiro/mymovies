@@ -10,6 +10,9 @@ Route::get('/flash', [FlashController::class, 'flash']);
 Route::middleware('admin')->group(function () {
     Route::get('/admin', [AdminController::class, 'index']);
 });
+Route::middleware('editor')->group(function () {
+    Route::get('/editor', [EditorController::class, 'index']);
+});
 Route::middleware('auth')->group(function () {
     Route::post('/auth/logout', [UserController::class, 'logout']);
 });

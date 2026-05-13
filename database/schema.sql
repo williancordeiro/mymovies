@@ -11,6 +11,7 @@ CREATE TABLE `users` (
     `admin` DECIMAL(1) NOT NULL,
     `created_at` TIMESTAMP NOT NULL,
     `updated_at` TIMESTAMP,
+    `editor` DECIMAL(1) NOT NULL DEFAULT 0,
     PRIMARY KEY (`id`)
 );
 

@@ -15,6 +15,7 @@ class UserController extends Controller
         $data = json_decode($json, true);
 
         $email = $data['email'] ?? $request->getParam('email');
+        $username = $data['email'] ?? $request->getParam('email');
         $password = $data['password'] ?? $request->getParam('password');
 
         if (!$email || !$password) {
@@ -23,7 +24,7 @@ class UserController extends Controller
             return;
         }
 
-        $user = User::findByEmail($email);
+        $user = User::findByEmail($email) ?? User::findByUsername($username);
 
         if ($user && $user->authenticate($password)) {
             $token = Auth::generateToken($user);

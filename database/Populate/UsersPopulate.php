@@ -13,6 +13,7 @@ class UsersPopulate {
             'email' => 'example@email.com',
             'encrypted_password' => password_hash('password123', PASSWORD_DEFAULT),
             'admin' => 0,
+            'editor' => 0,
             'created_at' => date('Y-m-d H:i:s'),
             'updated_at' => date('Y-m-d H:i:s')
         ]);
@@ -24,11 +25,24 @@ class UsersPopulate {
             'email' => 'admin@email.com',
             'encrypted_password' => password_hash('adminpass', PASSWORD_DEFAULT),
             'admin' => 1,
+            'editor' => 0,  
             'created_at' => date('Y-m-d H:i:s'),
             'updated_at' => date('Y-m-d H:i:s')
         ]);
 
         $user2->save();
+
+        $user3 = new User([
+            'username' => 'EditorUser3',
+            'email' => 'editor@email.com',
+            'encrypted_password' => password_hash('editorpass', PASSWORD_DEFAULT),
+            'admin' => 0,
+            'editor' => 1,
+            'created_at' => date('Y-m-d H:i:s'),
+            'updated_at' => date('Y-m-d H:i:s')
+        ]);
+
+        $user3->save();        
 
 
         echo "Users populated successfully.\n";

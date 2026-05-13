@@ -24,6 +24,7 @@ class User extends Model
         'encrypted_password',
         'avatar_file',
         'admin',
+        'editor',
         'created_at',
         'updated_at'];
 
@@ -54,6 +55,11 @@ class User extends Model
     public static function findByEmail(string $email): User | null
     {
         return User::findBy(['email' => $email]);
+    }
+
+    public static function findByUsername(string $username): User | null
+    {
+        return User::findBy(['username' => $username]);
     }
 
     public function __set(string $property, mixed $value): void
