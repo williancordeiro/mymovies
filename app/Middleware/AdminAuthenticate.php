@@ -17,7 +17,7 @@ class AdminAuthenticate extends Authenticate
 
         $user = Auth::user($token);
 
-        if (!$user || $user->admin != 1) {
+        if (!$user || $user->role != 'Admin') {
             $this->forbidden();
         }
     }

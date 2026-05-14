@@ -19,7 +19,7 @@ class UserTest extends TestCase
             'email' => 'fulano@example.com',
             'password' => '123456',
             'password_confirmation' => '123456',
-            'admin' => 0,
+            'role' => 'Default',
             'created_at' => date('Y-m-d H:i:s'),
             'updated_at' => date('Y-m-d H:i:s')
         ]);
@@ -30,7 +30,7 @@ class UserTest extends TestCase
             'email' => 'fulano1@example.com',
             'password' => '123456',
             'password_confirmation' => '123456',
-            'admin' => 0,
+            'role' => 'Admin',
             'created_at' => date('Y-m-d H:i:s'),
             'updated_at' => date('Y-m-d H:i:s')
         ]);
@@ -98,7 +98,7 @@ class UserTest extends TestCase
             'email' => 'fulano3@example.com',
             'password' => '123456',
             'password_confirmation' => '1234567',
-            'admin' => 0,
+            'role' => 'Default',
             'created_at' => date('Y-m-d H:i:s'),
             'updated_at' => date('Y-m-d H:i:s')
         ]);

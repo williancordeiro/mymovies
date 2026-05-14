@@ -12,9 +12,9 @@ class UsersPopulate {
             'username' => 'NormalUser1',
             'email' => 'example@email.com',
             'encrypted_password' => password_hash('password123', PASSWORD_DEFAULT),
-            'admin' => 0,
-            'created_at' => date('Y-m-d H:i:s'),
-            'updated_at' => date('Y-m-d H:i:s')
+            'role' => 'Default',
+            'handle' => 'normaluser1' . mt_rand(1000, 9999),
+            'avatar_file' => 'avatar.png'
         ]);
 
         $user1->save();
@@ -23,9 +23,9 @@ class UsersPopulate {
             'username' => 'AdminUser1',
             'email' => 'admin@email.com',
             'encrypted_password' => password_hash('adminpass', PASSWORD_DEFAULT),
-            'admin' => 1,
-            'created_at' => date('Y-m-d H:i:s'),
-            'updated_at' => date('Y-m-d H:i:s')
+            'role' => 'Admin',
+            'handle' => 'adminuser1' . mt_rand(1000, 9999),
+            'avatar_file' => 'avatar.png'
         ]);
 
         $user2->save();
