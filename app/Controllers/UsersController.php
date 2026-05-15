@@ -19,16 +19,14 @@ class UsersController extends Controller {
         $email = $data['email'] ?? $request->getParam('email');
         $password = $data['password'] ?? $request->getParam('password');
         $username = $data['username'] ?? $request->getParam('username');
-        //$role = $data['role'] ?? $request->getParam('role');
-        $login = $email ?? $username;
 
-        if (!$login || !$password) {
+        if (!$email || !$password) {
             FlashMessage::danger('E-mail e senha são obrigatórios!');
             $this->json(['error' => 'E-mail e senha são obrigatórios'], 400);
             return;
         }
 
-        $user = User::findByEmail($login) ?? User::findByUsername($login);
+        $user = User::findByEmail($email);
 
         if ($user && $user->authenticate($password)) {
             $token = Auth::generateToken($user);
@@ -49,10 +47,13 @@ class UsersController extends Controller {
         }
 
         FlashMessage::danger('Credenciais inválidas!');
-        $this->json(['error' => 'E-mail ou senha inválidos'], 401);
+        $this->json([
+            'message' => 'Credenciais inválidas!',
+            'error' => 'Credenciais inválidas!'
+        ], 401);
     }
 
-    public function register(Request $request): void {
+    public function create(Request $request): void {
         $json = file_get_contents('php://input');
         $decode = json_decode($json, true);
 
@@ -80,13 +81,6 @@ class UsersController extends Controller {
             return;
         }
 
-        if (User::findByEmail($data['email'])) {
-            $token = Auth::generateToken($user);
-            FlashMessage::danger('E-mail já cadastrado');
-            $this->json(['error' => 'E-mail já cadastrado'], 400);
-            return;
-        }
-
         $user = new User($data);
 
         if ($user->save()) {
@@ -104,7 +98,10 @@ class UsersController extends Controller {
                 ]
             ], 201);
         } else {
-            $this->json(['error' => $user->errors()], 400);
+            $this->json([
+                'message' => 'Erro na validação dos dados',
+                'errors' => $user->errors()
+                ], 422);
         }
 
     }
@@ -134,6 +131,12 @@ class UsersController extends Controller {
             return;
         }
 
+        if (User::findByHandle($data['handle'])) {
+            FlashMessage::danger('Indentificador já cadastrado');
+            $this->json(['error' => 'Indentificador já cadastrado'], 400);
+            return;
+        }
+
         if ($user->update($data)) {
             $token = Auth::generateToken($user);
             FlashMessage::success('Seus dados foram atualizados!');
@@ -151,6 +154,47 @@ class UsersController extends Controller {
         } else {
             $this->json(['error' => $user->errors()], 500);
         }
+    }
+
+    public function delete(Request $request): void {
+        $user = $this->currentUser();
+
+        if (!$user) {
+            $this->json(['error' => 'Usuário não encontrado'], 401);
+            return;
+        }
+
+        $json = file_get_contents('php://input');
+        $decode = json_decode($json, true);
+        $password = $decode['password'] ?? $request->getParam('password');
+
+        if(!$password) {
+            $this->json(['error' => 'A senha é obrigatória!'], 400);
+            return;
+        }
+
+        if (!$user->authenticate($password)) {
+            $this->json(['error' => 'A senha está incorreta!'], 401);
+            return;
+        }
+
+        $uploadDir = (string) Constants::rootPath()->join('public/assets/uploads/');
+
+        if ($user->avatar_file && $user->avatar_file !== 'avatar.png') {
+            $filePath = $uploadDir . $user->avatar_file;
+
+            if (file_exists($filePath)) {
+                unlink($filePath);
+            }
+        }
+
+        if ($user->destroy()) {
+            FlashMessage::success('Sua conta foi deletada!');
+            $this->json(['message' => 'Sua conta foi deletada!'], 200);
+        } else {
+            $this->json(['error' => 'Erro ao deletar a conta'], 500);
+        }
+
     }
 
     public function changeEmail(Request $request): void {
@@ -182,13 +226,6 @@ class UsersController extends Controller {
         if (!$user->authenticate($password)) {
             FlashMessage::danger('A senha está incorreta');
             $this->json(['error' => 'A senha está incorreta'], 400);
-            return;
-        }
-
-        if (User::findByEmail($data['email'])) {
-            $token = Auth::generateToken($user);
-            FlashMessage::danger('E-mail já cadastrado');
-            $this->json(['error' => 'E-mail já cadastrado'], 400);
             return;
         }
 
@@ -261,13 +298,15 @@ class UsersController extends Controller {
                 ]
             ]);
         } else {
-            $this->json(['error' => 'Erro ao mover o arquivo físico'], 500);
+            $this->json([
+                'message' => 'Erro ao atualizar o icone',
+                'error' => $user->errors()
+            ], 422);
         }
 
     }
 
-    public function logout(Request $request): void
-    {
+    public function logout(Request $request): void {
             $this->json(['message' => 'Logout realizado com sucesso'], 200);
     }
 }

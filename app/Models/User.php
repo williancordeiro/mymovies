@@ -33,10 +33,13 @@ class User extends Model
 
     public function validates(): void
     {
-        Validations::notEmpty('username', $this);
-        Validations::notEmpty('email', $this);
+        Validations::notEmpty('username', $this, 'O nome de usuário é obrigatório!');
+        Validations::notEmpty('email', $this, 'O e-mail é obrigatório!');
+        Validations::notEmpty('password', $this, 'A senha é obrigatória!');
 
-        Validations::uniqueness('email', $this);
+
+        Validations::uniqueness('email', $this, 'Esse email já esta em uso!');
+        Validations::uniqueness('handle', $this, 'Esse indentificador já esta em uso!');
 
         /*if ($this->newRecord()) {
             Validations::passwordConfirmation($this);
@@ -58,6 +61,10 @@ class User extends Model
 
     public static function findByUsername(string $username): User | null {
         return User::findBy(['username' => $username]);
+    }
+
+    public static function findByHandle(string $handle): User | null {
+        return User::findBy(['handle' => $handle]);
     }
 
     public function __set(string $property, mixed $value): void

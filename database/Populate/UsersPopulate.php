@@ -34,10 +34,9 @@ class UsersPopulate {
             'username' => 'EditorUser3',
             'email' => 'editor@email.com',
             'encrypted_password' => password_hash('editorpass', PASSWORD_DEFAULT),
-            'admin' => 0,
-            'editor' => 1,
-            'created_at' => date('Y-m-d H:i:s'),
-            'updated_at' => date('Y-m-d H:i:s')
+            'role' => 'Admin',
+            'handle' => 'editoruser3' . mt_rand(1000, 9999),
+            'avatar_file' => 'avatar.png'
         ]);
 
         $user3->save();        
