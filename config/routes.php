@@ -7,6 +7,7 @@ use Core\Router\Route;
 
 Route::post('/auth/login', [UsersController::class, 'login']);
 Route::post('/auth/register', [UsersController::class, 'create']);
+Route::get('/movies', [HomeController::class, 'index']);
 
 Route::get('/flash', [FlashController::class, 'flash']);
 Route::middleware('admin')->group(function () {
@@ -24,8 +25,4 @@ Route::middleware('auth')->group(function () {
 
 Route::middleware('editor')->group(function () {
     Route::get('/editor', [EditorController::class, 'index']);
-});
-
-Route::middleware('auth')->group(function () {
-    Route::get('/', [HomeController::class, 'index']);
 });
