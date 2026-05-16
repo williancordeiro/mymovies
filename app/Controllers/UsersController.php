@@ -169,11 +169,13 @@ class UsersController extends Controller {
         $password = $decode['password'] ?? $request->getParam('password');
 
         if(!$password) {
+            FlashMessage::danger('A senha é obrigatória!');
             $this->json(['error' => 'A senha é obrigatória!'], 400);
             return;
         }
 
         if (!$user->authenticate($password)) {
+            FlashMessage::danger('A senha está incorreta!');
             $this->json(['error' => 'A senha está incorreta!'], 401);
             return;
         }
