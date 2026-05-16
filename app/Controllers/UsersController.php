@@ -111,44 +111,47 @@ class UsersController extends Controller {
         $json = file_get_contents('php://input');
         $decode = json_decode($json, true);
 
-        $username = $decode['username'] ?? $request->getParam('username');
-        $handle = $decode['handle'] ?? $request->getParam('handle');
+        $data = [];
 
-        $data = [
-            'username' => $username,
-            'handle' => $handle,
-        ];
+        if (isset($decode['username']) || $request->getParam('username'))
+            $data['username'] = $decode['username'] ?? $request->getParam('username');
 
-        if (!$data['username'] || !$data['handle']) {
-            FlashMessage::danger('Nome e indentificador são obrigatórios');
-            $this->json(['error' => 'Todos os campos são obrigatórios'], 400);
+        if (isset($decode['handle']) || $request->getParam('handle'))
+            $data['handle'] = $decode['handle'] ?? $request->getParam('handle');
+
+        if (empty($data)) {
+            FlashMessage::warning('Nenhum dado foi enviado para atualização');
+            $this->json(['error' => 'Nenhum dado foi enviado para atualização'], 400);
             return;
         }
 
-        if (User::findByHandle($data['handle'])) {
-            FlashMessage::danger('Indentificador já cadastrado');
-            $this->json(['error' => 'Indentificador já cadastrado'], 400);
-            return;
+        foreach($data as $key => $value) {
+            $user->$key = $value;
         }
 
-        if ($user->update($data)) {
-            $token = Auth::generateToken($user);
-            FlashMessage::success('Seus dados foram atualizados!');
-            $this->json([
-                'token' => $token,
-                'user' => [
-                    'id'    => $user->id,
-                    'username'  => $user->username,
-                    'handle' => $user->handle,
-                    'email' => $user->email,
-                    'role' => $user->role,
-                    'avatar_file' => $user->avatarPath()
-                ]
-            ]);
+        if ($user->isValid()) {
+            if ($user->update($data)) {
+                $token = Auth::generateToken($user);
+                FlashMessage::success('Dados atualizados com sucesso');
+                $this->json([
+                    'token' => $token,
+                    'user' => [
+                        'id' => $user->id,
+                        'username' => $user->username,
+                        'handle' => $user->handle,
+                        'email' => $user->email,
+                        'role' => $user->role,
+                        'avatar_file' => $user->avatarPath()
+                    ]
+                ]);
+            } else {
+                FlashMessage::warning('Nenhuma alteração foi realizada');
+                $this->json(['error' => 'Nenhuma alteração foi realizada'], 200);
+            }
         } else {
             $this->json([
                 'message' => 'Erro na validação dos dados',
-                'error' => 'Não foi possivel atualizar dados'
+                'errors' => $user->errors()
             ], 422);
         }
     }
