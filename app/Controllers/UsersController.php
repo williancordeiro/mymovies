@@ -49,7 +49,7 @@ class UsersController extends Controller {
         FlashMessage::danger('Credenciais inválidas!');
         $this->json([
             'message' => 'Credenciais inválidas!',
-            'error' => 'Credenciais inválidas!'
+            'errors' => 'Credenciais inválidas!'
         ], 401);
     }
 
@@ -74,12 +74,6 @@ class UsersController extends Controller {
             'handle' => $handle,
             'avatar_file' => $avatar_file
         ];
-
-        if (!$data['email'] || !$data['username'] || !$data['password']) {
-            FlashMessage::danger('Todos os campos são obrigatórios!');
-            $this->json(['error' => 'Todos os campos são obrigatórios'], 400);
-            return;
-        }
 
         $user = new User($data);
 
@@ -152,7 +146,10 @@ class UsersController extends Controller {
                 ]
             ]);
         } else {
-            $this->json(['error' => $user->errors()], 500);
+            $this->json([
+                'message' => 'Erro na validação dos dados',
+                'error' => 'Não foi possivel atualizar dados'
+            ], 422);
         }
     }
 
@@ -211,25 +208,19 @@ class UsersController extends Controller {
         $email = $decode['email'] ?? $request->getParam('email');
         $password = $decode['password'] ?? $request->getParam('password');
 
+        if (!$user->authenticate($password)) {
+            FlashMessage::danger('A senha está incorreta!');
+            $this->json(['error' => 'A senha está incorreta!'], 401);
+            return;
+        }
+
         $data = [
             'email' => $email,
-            'password' => $password
         ];
 
-        if (!$data['email'] || !$data['password']) {
-            $token = Auth::generateToken($user);
-            FlashMessage::danger('O novo e-mail e a senha são obrigatórios');
-            $this->json(['error' => 'Todos os campos são obrigatórios'], 400);
-            return;
-        }
+        $user->email = $data['email'];
 
-        if (!$user->authenticate($password)) {
-            FlashMessage::danger('A senha está incorreta');
-            $this->json(['error' => 'A senha está incorreta'], 400);
-            return;
-        }
-
-        if ($user->update($data)) {
+        if ($user->isValid() && $user->update($data)) {
             $token = Auth::generateToken($user);
             FlashMessage::success('Seu e-mail foi atualizado!');
             $this->json([
@@ -244,7 +235,10 @@ class UsersController extends Controller {
                 ]
             ]);
         } else {
-            $this->json(['error' => $user->errors()], 500);
+            $this->json([
+                'message' => 'Erro na validação dos dados',
+                'errors' => $user->errors()
+            ], 422);
         }
     }
 
@@ -300,7 +294,7 @@ class UsersController extends Controller {
         } else {
             $this->json([
                 'message' => 'Erro ao atualizar o icone',
-                'error' => $user->errors()
+                'errors' => 'Não foi possivel atualizar o icone'
             ], 422);
         }
 
