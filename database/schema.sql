@@ -15,6 +15,8 @@ CREATE TABLE `users` (
     PRIMARY KEY (`id`)
 );
 
+DROP TABLE IF EXISTS movie_ratings;
+
 CREATE TABLE movie_ratings (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
