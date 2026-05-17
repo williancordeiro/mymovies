@@ -101,3 +101,10 @@ Neste caso precisa alterar o valor do PHPSESSID de acordo com a o id da sua sess
 ```shell
 curl -H "Accept: application/json" -b "PHPSESSID=5f55f364a48d87fb7ef9f18425a8ae88" localhost/problems
 ```
+
+Quando a API não funcionar, um bom teste é atualizar os containers
+
+```shell
+docker compose down && docker compose up -d
+```
+

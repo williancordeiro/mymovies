@@ -26,3 +26,11 @@ Route::middleware('auth')->group(function () {
 Route::middleware('editor')->group(function () {
     Route::get('/editor', [EditorController::class, 'index']);
 });
+
+Route::get('/movies/{id}', [HomeController::class, 'show']);
+
+Route::middleware('auth')->group(function () {
+    Route::post('/movies/rate', [HomeController::class, 'rate']);
+});
+
+Route::get('/users/{handle}/ratings', [UsersController::class, 'ratings']);

@@ -308,4 +308,21 @@ class UsersController extends Controller {
     public function logout(Request $request): void {
             $this->json(['message' => 'Logout realizado com sucesso'], 200);
     }
+
+    public function ratings(Request $request): void {
+        $handle = $request->getParam('handle');
+        $db = \Core\Database\Database::getDatabaseConn();
+        
+        $query = "SELECT r.movie_id, r.rating, u.username 
+                  FROM movie_ratings r 
+                  JOIN users u ON r.user_id = u.id 
+                  WHERE u.handle = ?
+                  ORDER BY r.created_at DESC";
+                  
+        $stmt = $db->prepare($query);
+        $stmt->execute([$handle]);
+        $ratings = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+
+        $this->json(['ratings' => $ratings]);
+    }
 }

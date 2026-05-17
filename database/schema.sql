@@ -15,4 +15,13 @@ CREATE TABLE `users` (
     PRIMARY KEY (`id`)
 );
 
+CREATE TABLE movie_ratings (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    movie_id INT NOT NULL,
+    rating INT NOT NULL CHECK (rating >= 1 AND rating <= 5),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY user_movie (user_id, movie_id)
+);
+
 SET foreign_key_checks = 1;
