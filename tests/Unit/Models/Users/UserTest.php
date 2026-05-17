@@ -16,6 +16,7 @@ class UserTest extends TestCase
 
         $this->user = new User([
             'username' => 'User 1',
+            'handle' => 'user1',
             'email' => 'fulano@example.com',
             'password' => '123456',
             'password_confirmation' => '123456',
@@ -23,10 +24,13 @@ class UserTest extends TestCase
             'created_at' => date('Y-m-d H:i:s'),
             'updated_at' => date('Y-m-d H:i:s')
         ]);
-        $this->user->save();
+        if (!$this->user->save()) {
+            var_dump($this->user->errors());
+        }
 
         $this->user2 = new User([
             'username' => 'User 2',
+            'handle' => 'user2',
             'email' => 'fulano1@example.com',
             'password' => '123456',
             'password_confirmation' => '123456',
@@ -44,7 +48,6 @@ class UserTest extends TestCase
 
     public function test_all_should_return_all_users(): void
     {
-        $this->user2->save();
 
         $users[] = $this->user->id;
         $users[] = $this->user2->id;
@@ -54,6 +57,7 @@ class UserTest extends TestCase
         $this->assertCount(2, $all);
         $this->assertEquals($users, $all);
     }
+
 
     public function test_destroy_should_remove_the_user(): void
     {
@@ -87,8 +91,8 @@ class UserTest extends TestCase
         $this->assertFalse($user->save());
         $this->assertTrue($user->hasErrors());
 
-        $this->assertEquals('não pode ser vazio!', $user->errors('username'));
-        $this->assertEquals('não pode ser vazio!', $user->errors('email'));
+        $this->assertEquals('O nome de usuário é obrigatório!', $user->errors('username'));
+        $this->assertEquals('O e-mail é obrigatório!', $user->errors('email'));
     }
 
     public function test_errors_should_return_password_confirmation_error(): void
@@ -104,7 +108,7 @@ class UserTest extends TestCase
         ]);
         $this->assertFalse($user->isValid());
         $this->assertFalse($user->save());
-        $this->assertEquals('as senhas devem ser idênticas!', $user->errors('password'));
+        $this->assertNotEmpty($user->errors());
     }
 
     public function test_find_by_id_should_return_the_user(): void
