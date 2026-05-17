@@ -17,6 +17,7 @@ Route::middleware('admin')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::post('/auth/logout', [UsersController::class, 'logout']);
     Route::delete('/account/delete', [UsersController::class, 'delete']);
+    Route::get('/users', [UsersController::class, 'index']);
 
     Route::put('/profile/update', [UsersController::class, 'update']);
     Route::put('/change/email', [UsersController::class, 'changeEmail']);
@@ -32,5 +33,6 @@ Route::get('/movies/{id}', [HomeController::class, 'show']);
 Route::middleware('auth')->group(function () {
     Route::post('/movies/rate', [HomeController::class, 'rate']);
 });
+
 
 Route::get('/users/{handle}/ratings', [UsersController::class, 'ratings']);

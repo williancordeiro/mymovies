@@ -26,6 +26,8 @@ class User extends Model
         'encrypted_password',
         'avatar_file',
         'role',
+        'created_at',
+        'updated_at'
         ];
 
     protected ?string $password = null;
@@ -37,14 +39,13 @@ class User extends Model
         Validations::notEmpty('email', $this, 'O e-mail é obrigatório!');
         Validations::notEmpty('handle', $this, 'O indentificador é obrigatório!');
 
-        if($this->newRecord()) {
+        if ($this->newRecord()) {
             Validations::notEmpty('password', $this, 'A senha é obrigatória!');
         }
 
 
         Validations::uniqueness('email', $this, 'Esse email já esta em uso!');
         Validations::uniqueness('handle', $this, 'Esse indentificador já esta em uso!');
-
     }
 
     public function authenticate(string $password): bool
@@ -56,15 +57,18 @@ class User extends Model
         return password_verify($password, $this->encrypted_password);
     }
 
-    public static function findByEmail(string $email): User | null {
+    public static function findByEmail(string $email): User | null
+    {
         return User::findBy(['email' => $email]);
     }
 
-    public static function findByUsername(string $username): User | null {
+    public static function findByUsername(string $username): User | null
+    {
         return User::findBy(['username' => $username]);
     }
 
-    public static function findByHandle(string $handle): User | null {
+    public static function findByHandle(string $handle): User | null
+    {
         return User::findBy(['handle' => $handle]);
     }
 
@@ -81,7 +85,8 @@ class User extends Model
         }
     }
 
-    public function avatarPath(): string {
+    public function avatarPath(): string
+    {
         if (!$this->avatar_file || $this->avatar_file === 'avatar.png') {
             return "/assets/images/defaults/avatar.png";
         }
