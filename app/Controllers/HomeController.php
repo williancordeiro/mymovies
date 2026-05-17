@@ -17,11 +17,13 @@ class HomeController extends Controller
         $this->json(['movies' => $popularMovies]);
     }
 
-    public function rate(Request $request) {
+    public function rate(Request $request): void
+    {
         $user = $this->currentUser();
-        
+
         if (!$user) {
-            return $this->json(['error' => 'Não autorizado'], 401);
+            $this->json(['error' => 'Não autorizado'], 401);
+            return;
         }
 
         // Lê o corpo da requisição JSON do Angular
@@ -32,19 +34,20 @@ class HomeController extends Controller
         $rating = $data['rating'] ?? $request->getParam('rating');
 
         if (!$movieId || !$rating) {
-            return $this->json(['error' => 'Dados incompletos', 'received' => $data], 400);
+            $this->json(['error' => 'Dados incompletos', 'received' => $data], 400);
+            return;
         }
 
         $db = \Core\Database\Database::getDatabaseConn();
-        
+
         $query = "INSERT INTO movie_ratings (user_id, movie_id, rating) 
                 VALUES (?, ?, ?) 
                 ON DUPLICATE KEY UPDATE rating = VALUES(rating)";
-                
+
         $stmt = $db->prepare($query);
         $result = $stmt->execute([$user->id, $movieId, $rating]);
 
-        return $this->json([
+        $this->json([
             'success' => $result,
             'message' => 'Avaliação salva com sucesso!',
             'rating' => $rating
@@ -52,12 +55,13 @@ class HomeController extends Controller
     }
 
 
-    public function show(Request $request) {
-        $id = $request->getParam('id'); 
-        
+    public function show(Request $request): void
+    {
+        $id = $request->getParam('id');
+
         $tmdb = new TheMovieDatabase();
         $movie = $tmdb->getMovieDetails($id);
-        
+
         $this->json(['movie' => $movie]);
     }
 }

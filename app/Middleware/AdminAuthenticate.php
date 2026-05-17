@@ -9,6 +9,11 @@ class AdminAuthenticate extends Authenticate
 {
     public function handle(Request $request): void
     {
+        $uri = $_SERVER['REQUEST_URI'] ?? $request->getUri();
+        if (preg_match('/auth\/login/i', $uri)) {
+            return;
+        }
+
         parent::handle($request);
 
         $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? '';

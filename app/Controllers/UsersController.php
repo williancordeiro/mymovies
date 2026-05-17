@@ -9,10 +9,10 @@ use Core\Http\Request;
 use Lib\FlashMessage;
 use Core\Constants\Constants;
 
-
-class UsersController extends Controller {
-
-    public function login(Request $request): void {
+class UsersController extends Controller
+{
+    public function login(Request $request): void
+    {
         $json = file_get_contents('php://input');
         $data = json_decode($json, true);
 
@@ -53,7 +53,8 @@ class UsersController extends Controller {
         ], 401);
     }
 
-    public function create(Request $request): void {
+    public function create(Request $request): void
+    {
         $json = file_get_contents('php://input');
         $decode = json_decode($json, true);
 
@@ -64,7 +65,7 @@ class UsersController extends Controller {
         $handle = strtolower($cleanUsername) . mt_rand(1000, 9999);
         $role = 'Default';
         $avatar_file = 'avatar.png';
-        
+
 
         $data = [
             'email' => $email,
@@ -97,10 +98,35 @@ class UsersController extends Controller {
                 'errors' => $user->errors()
                 ], 422);
         }
-
     }
 
-    public function update(Request $request): void {
+    public function index(Request $request): void
+    {
+        $page = (int) ($request->getParam('page') ?? 1);
+        $perPage = 10;
+        $offset = ($page - 1) * $perPage;
+
+        $users = User::all();
+        $total = count($users);
+        $users = array_slice($users, $offset, $perPage);
+
+        $this->json([
+        'users' => array_map(fn($user) => [
+            'id'         => $user->id,
+            'username'   => $user->username,
+            'handle'     => $user->handle,
+            'email'      => $user->email,
+            'role'       => $user->role,
+            'avatar_file' => $user->avatarPath()
+        ], $users),
+        'total' => $total,
+        'page'  => $page,
+        'pages' => ceil($total / $perPage)
+        ]);
+    }
+
+    public function update(Request $request): void
+    {
         $user = $this->currentUser();
 
         if (!$user) {
@@ -113,11 +139,13 @@ class UsersController extends Controller {
 
         $data = [];
 
-        if (isset($decode['username']) || $request->getParam('username'))
+        if (isset($decode['username']) || $request->getParam('username')) {
             $data['username'] = $decode['username'] ?? $request->getParam('username');
+        }
 
-        if (isset($decode['handle']) || $request->getParam('handle'))
+        if (isset($decode['handle']) || $request->getParam('handle')) {
             $data['handle'] = $decode['handle'] ?? $request->getParam('handle');
+        }
 
         if (empty($data)) {
             FlashMessage::warning('Nenhum dado foi enviado para atualização');
@@ -125,7 +153,7 @@ class UsersController extends Controller {
             return;
         }
 
-        foreach($data as $key => $value) {
+        foreach ($data as $key => $value) {
             $user->$key = $value;
         }
 
@@ -156,7 +184,8 @@ class UsersController extends Controller {
         }
     }
 
-    public function delete(Request $request): void {
+    public function delete(Request $request): void
+    {
         $user = $this->currentUser();
 
         if (!$user) {
@@ -168,7 +197,7 @@ class UsersController extends Controller {
         $decode = json_decode($json, true);
         $password = $decode['password'] ?? $request->getParam('password');
 
-        if(!$password) {
+        if (!$password) {
             FlashMessage::danger('A senha é obrigatória!');
             $this->json(['error' => 'A senha é obrigatória!'], 400);
             return;
@@ -196,10 +225,10 @@ class UsersController extends Controller {
         } else {
             $this->json(['error' => 'Erro ao deletar a conta'], 500);
         }
-
     }
 
-    public function changeEmail(Request $request): void {
+    public function changeEmail(Request $request): void
+    {
         $user = $this->currentUser();
 
         if (!$user) {
@@ -247,7 +276,8 @@ class UsersController extends Controller {
         }
     }
 
-    public function changeAvatar(Request $request): void {
+    public function changeAvatar(Request $request): void
+    {
         $user = $this->currentUser();
 
         if (!$user) {
@@ -283,7 +313,7 @@ class UsersController extends Controller {
             $user->update(['avatar_file' => $newFileName]);
             $token = Auth::generateToken($user);
             FlashMessage::success('Icone atualizado com sucesso');
-            
+
             $this->json([
                 'message' => 'Icone atualizado com sucesso',
                 'token' => $token,
@@ -302,23 +332,24 @@ class UsersController extends Controller {
                 'errors' => 'Não foi possivel atualizar o icone'
             ], 422);
         }
-
     }
 
-    public function logout(Request $request): void {
+    public function logout(Request $request): void
+    {
             $this->json(['message' => 'Logout realizado com sucesso'], 200);
     }
 
-    public function ratings(Request $request): void {
+    public function ratings(Request $request): void
+    {
         $handle = $request->getParam('handle');
         $db = \Core\Database\Database::getDatabaseConn();
-        
+
         $query = "SELECT r.movie_id, r.rating, u.username 
                   FROM movie_ratings r 
                   JOIN users u ON r.user_id = u.id 
                   WHERE u.handle = ?
                   ORDER BY r.created_at DESC";
-                  
+
         $stmt = $db->prepare($query);
         $stmt->execute([$handle]);
         $ratings = $stmt->fetchAll(\PDO::FETCH_ASSOC);

@@ -2,7 +2,8 @@
 
 namespace Lib;
 
-class TheMovieDatabase{
+class TheMovieDatabase
+{
     private string $apiKey;
     private string $readToken;
 
@@ -27,7 +28,8 @@ class TheMovieDatabase{
         return json_decode($response, true);
     }
 
-    public function getMovieDetails($id) {
+    public function getMovieDetails($id)
+    {
         $url = "https://api.themoviedb.org/3/movie/{$id}?language=pt-BR";
         $headers = [
             "Authorization: Bearer {$this->readToken}",
@@ -39,5 +41,5 @@ class TheMovieDatabase{
         $response = curl_exec($ch);
         curl_close($ch);
         return json_decode($response, true);
-    }  
+    }
 }

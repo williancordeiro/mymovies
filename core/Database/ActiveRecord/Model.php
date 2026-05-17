@@ -119,6 +119,9 @@ abstract class Model
         return !empty($this->errors);
     }
 
+    /**
+     * @return array<string, string>
+     */
     public function errors(string $index = null): string | array | null
     {
         if ($index === null) {

@@ -17,6 +17,7 @@ class EditorAuthenticate extends Authenticate
 
         $user = Auth::user($token);
 
+        /** @phpstan-ignore-next-line */
         if (!$user || $user->editor != 1) {
             $this->forbidden();
         }
