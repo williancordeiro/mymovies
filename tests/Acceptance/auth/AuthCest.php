@@ -25,11 +25,11 @@ class AuthCest extends BaseAcceptanceCest
     {
         $page->haveHttpHeader('Content-Type', 'application/json');
         $page->sendPost('/auth/login', json_encode([
-            'email' => 'email@errado.com',
-            'password' => 'senha_errada'
+        'email' => 'email@errado.com',
+        'password' => 'senha_errada'
         ]));
         $page->seeResponseCodeIs(401);
-        $page->seeResponseContainsJson(['error' => 'E-mail ou senha inválidos']);
+        $page->seeResponseContainsJson(['message' => 'Credenciais inválidas!']);
     }
 
     public function testShouldLoginSuccessfully(AcceptanceTester $page): void
