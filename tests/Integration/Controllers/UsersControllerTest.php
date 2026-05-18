@@ -5,7 +5,7 @@ namespace Tests\Integration\Controllers;
 use App\Models\User;
 use Database\Populate\UsersPopulate;
 
-class UserControllerTest extends ControllerTestCase
+class UsersControllerTest extends ControllerTestCase
 {
     public function setUp(): void
     {
@@ -20,7 +20,7 @@ class UserControllerTest extends ControllerTestCase
 
         $response = $this->post(
             action: 'login',
-            controllerName: 'App\Controllers\UserController',
+            controllerName: 'App\Controllers\UsersController',
             params: [
                 'email' => 'example@email.com',
                 'password' => 'password123'
@@ -40,7 +40,7 @@ class UserControllerTest extends ControllerTestCase
 
         $response = $this->post(
             action: 'login',
-            controllerName: 'App\Controllers\UserController',
+            controllerName: 'App\Controllers\UsersController',
             params: [
                 'email' => 'example@email.com',
                 'password' => 'wrongpassword'
@@ -48,8 +48,9 @@ class UserControllerTest extends ControllerTestCase
         );
 
         $data = json_decode($response, true);
-        $this->assertArrayHasKey('error', $data);
-        $this->assertEquals('E-mail ou senha inválidos', $data['error']);
+
+        $this->assertArrayHasKey('message', $data);
+        $this->assertEquals('Credenciais inválidas!', $data['message']);
     }
 
     public function test_should_not_login_with_wrong_email(): void
@@ -59,7 +60,7 @@ class UserControllerTest extends ControllerTestCase
 
         $response = $this->post(
             action: 'login',
-            controllerName: 'App\Controllers\UserController',
+            controllerName: 'App\Controllers\UsersController',
             params: [
                 'email' => 'wrong@email.com',
                 'password' => 'password123'
@@ -67,7 +68,7 @@ class UserControllerTest extends ControllerTestCase
         );
 
         $data = json_decode($response, true);
-        $this->assertArrayHasKey('error', $data);
-        $this->assertEquals('E-mail ou senha inválidos', $data['error']);
+        $this->assertArrayHasKey('message', $data);
+        $this->assertEquals('Credenciais inválidas!', $data['message']);
     }
 }

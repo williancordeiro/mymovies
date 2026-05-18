@@ -6,10 +6,10 @@ use Core\Database\Database;
 
 class Validations
 {
-    public static function notEmpty($attribute, $obj)
+    public static function notEmpty($attribute, $obj, string $msg = 'não pode ser vazio!')
     {
         if ($obj->$attribute === null || $obj->$attribute === '') {
-            $obj->addError($attribute, 'não pode ser vazio!');
+            $obj->addError($attribute, $msg);
             return false;
         }
 
@@ -26,7 +26,7 @@ class Validations
         return true;
     }
 
-    public static function uniqueness($fields, $object)
+    public static function uniqueness($fields, $object, string $msg = 'já existe um registro com esse dado')
     {
         $dbFieldsValues = [];
         $objFieldValues = [];
@@ -70,7 +70,7 @@ class Validations
 
         if ($stmt->rowCount() !== 0) {
             foreach ($fields as $field) {
-                $object->addError($field, 'já existe um registro com esse dado');
+                $object->addError($field, $msg);
             }
             return false;
         }

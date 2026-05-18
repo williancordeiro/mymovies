@@ -11,24 +11,44 @@ class UsersPopulate {
         $user1 = new User([
             'username' => 'NormalUser1',
             'email' => 'example@email.com',
-            'encrypted_password' => password_hash('password123', PASSWORD_DEFAULT),
-            'admin' => 0,
-            'created_at' => date('Y-m-d H:i:s'),
-            'updated_at' => date('Y-m-d H:i:s')
+            'password' => 'password123',
+            'role' => 'Default',
+            'handle' => 'normaluser1' . mt_rand(1000, 9999),
+            'avatar_file' => 'avatar.png'
         ]);
 
-        $user1->save();
+        if (!$user1->save()) {
+            print_r($user1->errors());
+            die("Erro ao salvar o usuário 1");
+        };
 
         $user2 = new User([
             'username' => 'AdminUser1',
             'email' => 'admin@email.com',
-            'encrypted_password' => password_hash('adminpass', PASSWORD_DEFAULT),
-            'admin' => 1,
-            'created_at' => date('Y-m-d H:i:s'),
-            'updated_at' => date('Y-m-d H:i:s')
+            'password' => 'adminpass',
+            'role' => 'Admin',
+            'handle' => 'adminuser1' . mt_rand(1000, 9999),
+            'avatar_file' => 'avatar.png'
         ]);
 
-        $user2->save();
+        if (!$user2->save()) {
+            print_r($user2->errors());
+            die("Erro ao salvar o usuário 2");
+        };
+
+        $user3 = new User([
+            'username' => 'EditorUser3',
+            'email' => 'editor@email.com',
+            'password' => 'editorpass',
+            'role' => 'Admin',
+            'handle' => 'editoruser3' . mt_rand(1000, 9999),
+            'avatar_file' => 'avatar.png'
+        ]);
+
+        if (!$user3->save()) {
+            print_r($user3->errors());
+            die("Erro ao salvar o usuário 3");
+        };        
 
 
         echo "Users populated successfully.\n";

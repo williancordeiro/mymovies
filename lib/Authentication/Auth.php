@@ -30,7 +30,9 @@ class Auth
             'sub' => $user->id,
             'email' => $user->email,
             'username' => $user->username,
-            'admin' => (int) $user->admin
+            'role' => $user->role,
+            'handle' => $user->handle,
+            'avatar_file' => $user->avatarPath()
         ];
 
         return JWT::encode($playload, self::getKey(), self::$algorithm);

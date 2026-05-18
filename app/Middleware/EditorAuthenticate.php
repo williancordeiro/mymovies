@@ -5,15 +5,10 @@ namespace App\Middleware;
 use Core\Http\Request;
 use Lib\Authentication\Auth;
 
-class AdminAuthenticate extends Authenticate
+class EditorAuthenticate extends Authenticate
 {
     public function handle(Request $request): void
     {
-        $uri = $_SERVER['REQUEST_URI'] ?? $request->getUri();
-        if (preg_match('/auth\/login/i', $uri)) {
-            return;
-        }
-
         parent::handle($request);
 
         $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
@@ -22,7 +17,8 @@ class AdminAuthenticate extends Authenticate
 
         $user = Auth::user($token);
 
-        if (!$user || $user->role != 'Admin') {
+        /** @phpstan-ignore-next-line */
+        if (!$user || $user->editor != 1) {
             $this->forbidden();
         }
     }
