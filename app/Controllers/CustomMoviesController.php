@@ -20,6 +20,36 @@ class CustomMoviesController extends Controller
         $this->json(['movies' => $movies]);
     }
 
+    // public function create(Request $request): void
+    // {
+    //     $user = $this->currentUser();
+    //     if (!$user) {
+    //         $this->json(['error' => 'Não autorizado'], 401);
+    //         return;
+    //     }
+
+    //     $json = file_get_contents('php://input');
+    //     $data = json_decode($json, true);
+
+    //     $movie = new CustomMovie();
+    //     $movie->user_id = $user->id;
+    //     $movie->title = !empty($data['title']) ? $data['title'] : null;
+    //     $movie->description = !empty($data['description']) ? $data['description'] : null;
+    //     $movie->release_year = !empty($data['release_year']) ? (int)$data['release_year'] : null;
+    //     $movie->poster_url = !empty($data['poster_url']) ? $data['poster_url'] : null;
+    //     $movie->rating = !empty($data['rating']) ? (int)$data['rating'] : null;
+    //     $movie->status = !empty($data['status']) ? $data['status'] : null;
+
+    //     if ($movie->save()) {
+    //         $this->json([
+    //             'movie'   => $movie,
+    //             'message' => 'Filme cadastrado com sucesso!'  //ensagem de sucesso
+    //         ], 201);
+    //     } else {
+    //         $this->json(['errors' => $movie->errors()], 422);
+    //     }
+    // }
+
     public function create(Request $request): void
     {
         $user = $this->currentUser();
@@ -41,11 +71,35 @@ class CustomMoviesController extends Controller
         $movie->status = !empty($data['status']) ? $data['status'] : null;
 
         if ($movie->save()) {
-            $this->json(['movie' => $movie], 201);
+            $warnings = [];
+
+            // alerta se nao preencheu descricao
+            if (empty($data['description'])) {
+                $warnings['description'] = 'Filme salvo sem descrição. Considere adicionar uma!';
+            }
+
+            // alerta se ano e muito antigo
+            if (!empty($data['release_year']) && (int)$data['release_year'] < 1950) {
+                $warnings['release_year'] = 'Ano anterior a 1950. Verifique se está correto.';
+            }
+
+            $response = [
+                'movie'   => $movie,
+                'message' => 'Filme cadastrado com sucesso!'  // sucesso
+            ];
+
+            // so inclui warnings se existirem
+            if (!empty($warnings)) {
+                $response['warnings'] = $warnings;  // alerta
+            }
+
+            $this->json($response, 201);
         } else {
+            // erros de validação
             $this->json(['errors' => $movie->errors()], 422);
         }
     }
+
 
     public function update(Request $request): void
     {

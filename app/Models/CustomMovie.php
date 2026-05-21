@@ -37,6 +37,12 @@ class CustomMovie extends Model
         Validations::notEmpty('user_id', $this, 'O ID do usuário é obrigatório!');
         Validations::notEmpty('title', $this, 'O título é obrigatório!');
 
+        if ($this->description !== null && $this->description !== '') {
+            if (strlen($this->description) < 10) {
+                $this->addError('description', 'A descrição deve ter pelo menos 10 caracteres.');
+            }
+        }
+
         if ($this->rating !== null && $this->rating !== '') {
             if (!is_numeric($this->rating) || (int)$this->rating < 1 || (int)$this->rating > 5) {
                 $this->addError('rating', 'A nota deve ser um número entre 1 e 5.');
