@@ -93,4 +93,11 @@ class User extends Model
 
         return "/assets/uploads/" . $this->avatar_file;
     }
+
+    public function jsonSerialize(): mixed
+    {
+        $data = parent::jsonSerialize();
+        unset($data['encrypted_password']);
+        return $data;
+    }
 }

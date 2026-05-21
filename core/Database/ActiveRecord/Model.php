@@ -13,7 +13,7 @@ use ReflectionMethod;
  * @package Core\Database\ActiveRecord
  * @property int $id
  */
-abstract class Model
+abstract class Model implements \JsonSerializable
 {
     /** @var array<string, string> */
     protected array $errors = [];
@@ -141,6 +141,13 @@ abstract class Model
     }
 
     public function validates(): void {}
+
+    public function jsonSerialize(): mixed
+    {
+        $data = $this->attributes;
+        $data['id'] = $this->id;
+        return $data;
+    }
 
     /* ------------------- DATABASE METHODS ------------------- */
     public function save(): bool

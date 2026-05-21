@@ -26,4 +26,20 @@ CREATE TABLE movie_ratings (
     UNIQUE KEY user_movie (user_id, movie_id)
 );
 
+DROP TABLE IF EXISTS custom_movies;
+
+CREATE TABLE custom_movies (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT UNSIGNED NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    release_year INT,
+    poster_url VARCHAR(255),
+    rating INT CHECK (rating >= 1 AND rating <= 5),
+    status ENUM('Vou assistir', 'Assistido', 'Não terminei'),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
 SET foreign_key_checks = 1;

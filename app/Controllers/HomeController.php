@@ -54,6 +54,35 @@ class HomeController extends Controller
         ]);
     }
 
+    public function deleteRate(Request $request): void
+    {
+        $user = $this->currentUser();
+
+        if (!$user) {
+            $this->json(['error' => 'Não autorizado'], 401);
+            return;
+        }
+
+        $movieId = $request->getParam('movie_id');
+
+        if (!$movieId) {
+            $this->json(['error' => 'Dados incompletos'], 400);
+            return;
+        }
+
+        $db = \Core\Database\Database::getDatabaseConn();
+
+        $query = "DELETE FROM movie_ratings WHERE user_id = ? AND movie_id = ?";
+
+        $stmt = $db->prepare($query);
+        $result = $stmt->execute([$user->id, $movieId]);
+
+        $this->json([
+            'success' => $result,
+            'message' => 'Avaliação removida com sucesso!'
+        ]);
+    }
+
 
     public function show(Request $request): void
     {
