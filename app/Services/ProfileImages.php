@@ -59,12 +59,12 @@ class ProfileImages {
 
         if (!$resp) {
             $error = error_get_last();
-            trow new RuntimeException(
+            throw new RuntimeException(
                 "Failed to move uploaded file: " . ($error['message'] ?? 'Unknown error')
             );
         }
 
-        return $true;
+        return true;
     }
 
     private function removeOldImage(): void {
@@ -79,7 +79,7 @@ class ProfileImages {
         return 'avatar' . $file_extension;
     }
 
-    private function getABsoluteDestinationPath(): string {
+    private function getAbsoluteDestinationPath(): string {
         return $this->storeDir() . $this->getFileName();
     }
 
