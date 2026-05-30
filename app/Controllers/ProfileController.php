@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use Core\Http\Controllers\Controller;
 use Lib\Authentication\Auth;
+use Lib\FlashMessage;
 use App\Models\User;
 use App\Services\ProfileImages;
 
@@ -25,6 +26,7 @@ class ProfileController extends Controller
 
         if ($service->update($image)) {
             $token = Auth::generateToken($this->currentUser());
+            FlashMessage::success('Ícone de perfil atualizado com sucesso!');
             $this->json([
                 'message' => 'Ícone atualizado com sucesso',
                 'token' => $token,
