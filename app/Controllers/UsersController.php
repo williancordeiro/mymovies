@@ -41,7 +41,7 @@ class UsersController extends Controller
                     'handle' => $user->handle,
                     'email' => $user->email,
                     'role' => $user->role,
-                    'avatar_file' => $user->avatarPath()
+                    'avatar_file' => $user->getAvatarPath()
                 ]
             ]);
             return;
@@ -90,7 +90,7 @@ class UsersController extends Controller
                     'handle' => $user->handle,
                     'email' => $user->email,
                     'role' => $user->role,
-                    'avatar_file' => $user->avatarPath()
+                    'avatar_file' => $user->getAvatarPath()
                 ]
             ], 201);
         } else {
@@ -118,7 +118,7 @@ class UsersController extends Controller
             'handle'     => $user->handle,
             'email'      => $user->email,
             'role'       => $user->role,
-            'avatar_file' => $user->avatarPath()
+            'avatar_file' => $user->getAvatarPath()
         ], $users),
         'total' => $total,
         'page'  => $page,
@@ -170,7 +170,7 @@ class UsersController extends Controller
                         'handle' => $user->handle,
                         'email' => $user->email,
                         'role' => $user->role,
-                        'avatar_file' => $user->avatarPath()
+                        'avatar_file' => $user->getAvatarPath()
                     ]
                 ]);
             } else {
@@ -266,7 +266,7 @@ class UsersController extends Controller
                     'handle' => $user->handle,
                     'email' => $user->email,
                     'role' => $user->role,
-                    'avatar_file' => $user->avatarPath()
+                    'avatar_file' => $user->getAvatarPath()
                 ]
             ]);
         } else {
@@ -275,47 +275,6 @@ class UsersController extends Controller
                 'errors' => $user->errors()
             ], 422);
         }
-    }
-
-    public function changeAvatar(Request $request): void
-    {
-        $user = $this->currentUser();
-
-        if (!$user) {
-            $this->json(['error' => 'Usuário não encontrado'], 401);
-            return;
-        }
-
-        if (!isset($_FILES['avatar_file']) || $_FILES['avatar_file']['error'] !== UPLOAD_ERR_OK) {
-            $this->json(['error' => 'Arquivo inválido'], 400);
-            return;
-        }
-
-        $service = new ProfileImages($user, [
-        'extensions' => ['jpg', 'jpeg', 'png'],
-        'max_size'   => 2 * 1024 * 1024, // 2MB
-        ]);
-
-        if ($service->update($_FILES['avatar_file'])) {
-            $token = Auth::generateToken($user);
-            $this->json([
-                'message' => 'Ícone atualizado com sucesso',
-                'token'   => $token,
-                'user'    => [
-                    'id'          => $user->id,
-                    'username'    => $user->username,
-                    'handle'      => $user->handle,
-                    'email'       => $user->email,
-                    'role'        => $user->role,
-                    'avatar_file' => $user->avatarPath(),
-                ]
-            ]);
-        } else {
-            $this->json([
-                'message' => 'Erro ao atualizar o ícone',
-                'errors'  => $user->errors()
-            ], 422);
-        }    
     }
 
     public function logout(Request $request): void

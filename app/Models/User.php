@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Lib\Validations;
 use Core\Database\ActiveRecord\Model;
+use App\Services\ProfileImages;
 
 /**
  * @property int $id
@@ -85,12 +86,23 @@ class User extends Model
         }
     }
 
-    public function avatarPath(): string
+    public function avatar(): ProfileImages
     {
-        if (!$this->avatar_file || $this->avatar_file === 'avatar.png') {
-            return "/assets/images/defaults/avatar.png";
-        }
+        return new ProfileImages($this);
+    }
 
-        return "/assets/uploads/users/{$this->id}/" . $this->avatar_file;
+    public function getAvatarPath(): string
+    {
+        return $this->avatar()->path();
+    }
+
+    public function banner(): ProfileImages
+    {
+        return new ProfileImages($this);
+    }
+
+    public function getBannerPath(): string
+    {
+        return $this->banner()->path();
     }
 }
