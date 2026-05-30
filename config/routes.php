@@ -3,6 +3,7 @@
 use App\Controllers\UsersController;
 use App\Controllers\AdminController;
 use App\Controllers\HomeController;
+use App\Controllers\ProfileController;
 use Core\Router\Route;
 
 Route::post('/auth/login', [UsersController::class, 'login']);
@@ -21,7 +22,7 @@ Route::middleware('auth')->group(function () {
 
     Route::put('/profile/update', [UsersController::class, 'update']);
     Route::put('/change/email', [UsersController::class, 'changeEmail']);
-    Route::post('/change/avatar', [UsersController::class, 'changeAvatar']);
+    Route::post('/change/avatar', [ProfileController::class, 'updateAvatar']);
 });
 
 Route::middleware('editor')->group(function () {
