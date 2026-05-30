@@ -11,6 +11,7 @@ use RuntimeException;
 class ProfileImages {
 
     private array $image;
+    private ?string $generatedFileName = null;
 
     public function __construct(
         private Model $model,
@@ -82,7 +83,10 @@ class ProfileImages {
     private function getFileName(): string {
         $file_name_splitted = explode('.', $this->image['name']);
         $file_extension = end($file_name_splitted);
-        return 'avatar.' . $file_extension;
+        if (!$this->generatedFileName) {
+            $this->generatedFileName = bin2hex(random_bytes(8)) . '.' . $file_extension;
+        }
+        return $this->generatedFileName;
     }
 
     private function getAbsoluteDestinationPath(): string {
