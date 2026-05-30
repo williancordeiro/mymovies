@@ -20,9 +20,10 @@ Route::middleware('auth')->group(function () {
     Route::delete('/account/delete', [UsersController::class, 'delete']);
     Route::get('/users', [UsersController::class, 'index']);
 
-    Route::put('/profile/update', [UsersController::class, 'update']);
+    Route::put('/profile/update', [ProfileController::class, 'update']);
     Route::put('/change/email', [UsersController::class, 'changeEmail']);
     Route::post('/change/avatar', [ProfileController::class, 'updateAvatar']);
+    Route::post('/change/banner', [ProfileController::class, 'updateBanner']);
 });
 
 Route::middleware('editor')->group(function () {

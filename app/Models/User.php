@@ -13,6 +13,7 @@ use App\Services\ProfileImages;
  * @property string $email
  * @property string $encrypted_password
  * @property string $avatar_file
+ * @property string $banner_file
  * @property string $role
  * @property string $created_at
  * @property string $updated_at
@@ -26,6 +27,7 @@ class User extends Model
         'email',
         'encrypted_password',
         'avatar_file',
+        'banner_file',
         'role',
         'created_at',
         'updated_at'
@@ -88,7 +90,7 @@ class User extends Model
 
     public function avatar(): ProfileImages
     {
-        return new ProfileImages($this);
+        return new ProfileImages($this, [], 'avatar_file');
     }
 
     public function getAvatarPath(): string
@@ -98,7 +100,7 @@ class User extends Model
 
     public function banner(): ProfileImages
     {
-        return new ProfileImages($this);
+        return new ProfileImages($this, [], 'banner_file');
     }
 
     public function getBannerPath(): string

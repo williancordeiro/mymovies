@@ -41,7 +41,8 @@ class UsersController extends Controller
                     'handle' => $user->handle,
                     'email' => $user->email,
                     'role' => $user->role,
-                    'avatar_file' => $user->getAvatarPath()
+                    'avatar_file' => $user->getAvatarPath(),
+                    'banner_file' => $user->getBannerPath()
                 ]
             ]);
             return;
@@ -66,7 +67,7 @@ class UsersController extends Controller
         $handle = strtolower($cleanUsername) . mt_rand(1000, 9999);
         $role = 'Default';
         $avatar_file = 'avatar.png';
-
+        $banner_file = 'banner.png';
 
         $data = [
             'email' => $email,
@@ -74,7 +75,8 @@ class UsersController extends Controller
             'password' => $password,
             'role' => $role,
             'handle' => $handle,
-            'avatar_file' => $avatar_file
+            'avatar_file' => $avatar_file,
+            'banner_file' => $banner_file
         ];
 
         $user = new User($data);
@@ -90,7 +92,8 @@ class UsersController extends Controller
                     'handle' => $user->handle,
                     'email' => $user->email,
                     'role' => $user->role,
-                    'avatar_file' => $user->getAvatarPath()
+                    'avatar_file' => $user->getAvatarPath(),
+                    'banner_file' => $user->getBannerPath()
                 ]
             ], 201);
         } else {
@@ -124,65 +127,6 @@ class UsersController extends Controller
         'page'  => $page,
         'pages' => ceil($total / $perPage)
         ]);
-    }
-
-    public function update(Request $request): void
-    {
-        $user = $this->currentUser();
-
-        if (!$user) {
-            $this->json(['error' => 'Usuário não encontrado'], 401);
-            return;
-        }
-
-        $json = file_get_contents('php://input');
-        $decode = json_decode($json, true);
-
-        $data = [];
-
-        if (isset($decode['username']) || $request->getParam('username')) {
-            $data['username'] = $decode['username'] ?? $request->getParam('username');
-        }
-
-        if (isset($decode['handle']) || $request->getParam('handle')) {
-            $data['handle'] = $decode['handle'] ?? $request->getParam('handle');
-        }
-
-        if (empty($data)) {
-            FlashMessage::warning('Nenhum dado foi enviado para atualização');
-            $this->json(['error' => 'Nenhum dado foi enviado para atualização'], 400);
-            return;
-        }
-
-        foreach ($data as $key => $value) {
-            $user->$key = $value;
-        }
-
-        if ($user->isValid()) {
-            if ($user->update($data)) {
-                $token = Auth::generateToken($user);
-                FlashMessage::success('Dados atualizados com sucesso');
-                $this->json([
-                    'token' => $token,
-                    'user' => [
-                        'id' => $user->id,
-                        'username' => $user->username,
-                        'handle' => $user->handle,
-                        'email' => $user->email,
-                        'role' => $user->role,
-                        'avatar_file' => $user->getAvatarPath()
-                    ]
-                ]);
-            } else {
-                FlashMessage::warning('Nenhuma alteração foi realizada');
-                $this->json(['error' => 'Nenhuma alteração foi realizada'], 200);
-            }
-        } else {
-            $this->json([
-                'message' => 'Erro na validação dos dados',
-                'errors' => $user->errors()
-            ], 422);
-        }
     }
 
     public function delete(Request $request): void
@@ -266,7 +210,8 @@ class UsersController extends Controller
                     'handle' => $user->handle,
                     'email' => $user->email,
                     'role' => $user->role,
-                    'avatar_file' => $user->getAvatarPath()
+                    'avatar_file' => $user->getAvatarPath(),
+                    'banner_file' => $user->getBannerPath()
                 ]
             ]);
         } else {

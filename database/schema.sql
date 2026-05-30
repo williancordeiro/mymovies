@@ -10,6 +10,7 @@ CREATE TABLE `users` (
     `encrypted_password` VARCHAR(255) NOT NULL,
     `role` ENUM('Default', 'Admin') NOT NULL DEFAULT 'Default',
     `avatar_file` VARCHAR(255) DEFAULT 'avatar.png',
+    `banner_file` VARCHAR(255) DEFAULT 'banner.png',
     `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`)
@@ -21,7 +22,10 @@ CREATE TABLE movie_ratings (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     movie_id INT NOT NULL,
-    rating INT NOT NULL CHECK (rating >= 1 AND rating <= 5),
+    rating INT NOT NULL CHECK (
+        rating >= 1
+        AND rating <= 5
+    ),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE KEY user_movie (user_id, movie_id)
 );

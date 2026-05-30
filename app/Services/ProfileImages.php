@@ -15,19 +15,21 @@ class ProfileImages {
 
     public function __construct(
         private Model $model,
-        private array $validations = []
+        private array $validations = [],
+        private string $column = 'avatar_file'
     ) {}
 
     public function path(): string {
-        if ($this->model->avatar_file) {
+        if ($this->model->{$this->column}) {
             $absolutePath = $this->getAbsoluteSavedFilePath();
             if (file_exists($absolutePath)) {
                 $hash = md5_file($absolutePath);
-                return $this->baseDir() . $this->model->avatar_file . '?' . $hash;
+                return $this->baseDir() . $this->model->{$this->column} . '?' . $hash;
             }
         }
 
-        return "/assets/images/defaults/avatar.png";
+        $defaultImageName = str_replace('_file', '', $this->column);
+        return "/assets/images/defaults/{$defaultImageName}.png";
     }
 
     public function update(array $image): bool {
@@ -39,7 +41,7 @@ class ProfileImages {
 
         if ($this->updateFile()) {
             $this->model->update([
-                'avatar_file' => $this->getFileName(),
+                $this->column => $this->getFileName(),
             ]);
 
             return true;
@@ -72,7 +74,7 @@ class ProfileImages {
     }
 
     private function removeOldImage(): void {
-        if ($this->model->avatar_file) {
+        if ($this->model->{$this->column}) {
             $path = $this->getAbsoluteSavedFilePath();
             if (file_exists($path)) {
                 unlink($path);
@@ -108,7 +110,7 @@ class ProfileImages {
     }
 
     private function getAbsoluteSavedFilePath(): string {
-       return Constants::rootPath()->join('public' . $this->baseDir())->join($this->model->avatar_file);
+       return Constants::rootPath()->join('public' . $this->baseDir())->join($this->model->{$this->column});
     }
 
     private function isValidImage(): bool {
@@ -120,7 +122,11 @@ class ProfileImages {
             $this->validateImageSize();
         }
 
-        return $this->model->errors('avatar_file') === null;
+        if (isset($this->validations['aspect_ratio'])) {
+            $this->validateImageAspectRatio();
+        }
+
+        return $this->model->errors($this->column) === null;
     }
 
     private function validateImageExtension(): void {
@@ -128,13 +134,24 @@ class ProfileImages {
         $file_extension = end($file_name_splitted);
 
         if (!in_array($file_extension, $this->validations['extensions'])) {
-            $this->model->addError('avatar_file', 'Invalid file extension');
+            $this->model->addError($this->column, 'Invalid file extension');
         }
     }
 
     private function validateImageSize(): void {
         if ($this->image['size'] > $this->validations['max_size']) {
-            $this->model->addError('avatar_file', 'File size exceeds the maximum allowed');
+            $this->model->addError($this->column, 'File size exceeds the maximum allowed');
+        }
+    }
+
+    private function validateImageAspectRatio(): void {
+        if (isset($this->validations['aspect_ratio'])) {
+            list($width, $height) = getimagesize($this->image['tmp_name']);
+            $aspectRatio = $width / $height;
+
+            if ($aspectRatio < $this->validations['aspect_ratio']['min'] || $aspectRatio > $this->validations['aspect_ratio']['max']) {
+                $this->model->addError($this->column, 'Invalid aspect ratio');
+            }
         }
     }
 }

@@ -14,7 +14,8 @@ class UsersPopulate {
             'password' => 'password123',
             'role' => 'Default',
             'handle' => 'normaluser1' . mt_rand(1000, 9999),
-            'avatar_file' => 'avatar.png'
+            'avatar_file' => 'avatar.png',
+            'banner_file' => 'banner.png'
         ]);
 
         if (!$user1->save()) {
@@ -28,7 +29,8 @@ class UsersPopulate {
             'password' => 'adminpass',
             'role' => 'Admin',
             'handle' => 'adminuser1' . mt_rand(1000, 9999),
-            'avatar_file' => 'avatar.png'
+            'avatar_file' => 'avatar.png',
+            'banner_file' => 'banner.png'
         ]);
 
         if (!$user2->save()) {
@@ -42,7 +44,8 @@ class UsersPopulate {
             'password' => 'editorpass',
             'role' => 'Admin',
             'handle' => 'editoruser3' . mt_rand(1000, 9999),
-            'avatar_file' => 'avatar.png'
+            'avatar_file' => 'avatar.png',
+            'banner_file' => 'banner.png'
         ]);
 
         if (!$user3->save()) {
