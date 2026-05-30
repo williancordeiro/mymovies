@@ -14,13 +14,16 @@ class ProfileImages {
 
     public function __construct(
         private Model $model,
-        private array $validations = [];
+        private array $validations = []
     ) {}
 
     public function path(): string {
         if ($this->model->avatar_file) {
-            $hash = md5_file($this->getAbsolutePath());
-            return $this->baseDir() . $this->model->avatar_file . '?' . $hash;
+            $absolutePath = $this->getAbsoluteSavedFilePath();
+            if (file_exists($absolutePath)) {
+                $hash = md5_file($absolutePath);
+                return $this->baseDir() . $this->model->avatar_file . '?' . $hash;
+            }
         }
 
         return "/assets/images/defaults/avatar.png";
@@ -46,14 +49,14 @@ class ProfileImages {
 
     protected function updateFile(): bool {
         
-        if (empty($this->getTmpFilePath())) {
+        if (empty($this->image['tmp_name'])) {
             return false;
         }
 
         $this->removeOldImage();
 
         $resp = move_uploaded_file(
-            $this->getTmpFilePath(),
+            $this->image['tmp_name'],
             $this->getAbsoluteDestinationPath()
         );
 
@@ -69,14 +72,17 @@ class ProfileImages {
 
     private function removeOldImage(): void {
         if ($this->model->avatar_file) {
-            unlink($this->getAbsoluteSavedFilePath());
+            $path = $this->getAbsoluteSavedFilePath();
+            if (file_exists($path)) {
+                unlink($path);
+            }
         }
     }
 
     private function getFileName(): string {
         $file_name_splitted = explode('.', $this->image['name']);
         $file_extension = end($file_name_splitted);
-        return 'avatar' . $file_extension;
+        return 'avatar.' . $file_extension;
     }
 
     private function getAbsoluteDestinationPath(): string {

@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use Core\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\ProfileImages;
 use Lib\Authentication\Auth;
 use Core\Http\Request;
 use Lib\FlashMessage;
@@ -290,48 +291,31 @@ class UsersController extends Controller
             return;
         }
 
-        $file = $_FILES['avatar_file'];
+        $service = new ProfileImages($user, [
+        'extensions' => ['jpg', 'jpeg', 'png'],
+        'max_size'   => 2 * 1024 * 1024, // 2MB
+        ]);
 
-        $extension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-        $allowedExtensions = ['jpg', 'jpeg', 'png'];
-
-        if (!in_array($extension, $allowedExtensions)) {
-            FlashMessage::danger('Somente arquivos JPG, JPEG e PNG são permitidos');
-            $this->json(['error' => 'Somente arquivos JPG, JPEG e PNG são permitidos'], 400);
-            return;
-        }
-
-        $newFileName = $user->id . '_avatar.' . $extension;
-        $uploadDir = (string) Constants::rootPath()->join('public/assets/uploads/');
-        $destination = $uploadDir . $newFileName;
-
-        if ($user->avatar_file && file_exists($uploadDir . $user->avatar_file)) {
-            unlink($uploadDir . $user->avatar_file);
-        }
-
-        if (move_uploaded_file($file['tmp_name'], $destination)) {
-            $user->update(['avatar_file' => $newFileName]);
+        if ($service->update($_FILES['avatar_file'])) {
             $token = Auth::generateToken($user);
-            FlashMessage::success('Icone atualizado com sucesso');
-
             $this->json([
-                'message' => 'Icone atualizado com sucesso',
-                'token' => $token,
-                'user' => [
-                    'id'    => $user->id,
-                    'username'  => $user->username,
-                    'handle' => $user->handle,
-                    'email' => $user->email,
-                    'role' => $user->role,
-                    'avatar_file' => $user->avatarPath()
+                'message' => 'Ícone atualizado com sucesso',
+                'token'   => $token,
+                'user'    => [
+                    'id'          => $user->id,
+                    'username'    => $user->username,
+                    'handle'      => $user->handle,
+                    'email'       => $user->email,
+                    'role'        => $user->role,
+                    'avatar_file' => $user->avatarPath(),
                 ]
             ]);
         } else {
             $this->json([
-                'message' => 'Erro ao atualizar o icone',
-                'errors' => 'Não foi possivel atualizar o icone'
+                'message' => 'Erro ao atualizar o ícone',
+                'errors'  => $user->errors()
             ], 422);
-        }
+        }    
     }
 
     public function logout(Request $request): void

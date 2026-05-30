@@ -91,6 +91,6 @@ class User extends Model
             return "/assets/images/defaults/avatar.png";
         }
 
-        return "/assets/uploads/" . $this->avatar_file;
+        return "/assets/uploads/users/{$this->id}/" . $this->avatar_file;
     }
 }
