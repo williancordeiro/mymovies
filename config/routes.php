@@ -18,7 +18,7 @@ Route::middleware('admin')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::post('/auth/logout', [UsersController::class, 'logout']);
     Route::delete('/account/delete', [UsersController::class, 'delete']);
-    Route::get('/users', [UsersController::class, 'index']);
+    Route::get('/list/users', [UsersController::class, 'listAll']);
 
     Route::put('/profile/update', [ProfileController::class, 'update']);
     Route::put('/change/email', [UsersController::class, 'changeEmail']);

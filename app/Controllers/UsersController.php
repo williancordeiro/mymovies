@@ -104,7 +104,7 @@ class UsersController extends Controller
         }
     }
 
-    public function index(Request $request): void
+    public function listAll(Request $request): void
     {
         $page = (int) ($request->getParam('page') ?? 1);
         $perPage = 10;
