@@ -80,7 +80,7 @@ class UserCest extends BaseAcceptanceCest
 
         $this->auth($I, $token);
 
-        $I->sendGet('/users');
+        $I->sendGet('/list/users');
 
         $I->seeResponseCodeIs(200);
     }
@@ -90,7 +90,7 @@ class UserCest extends BaseAcceptanceCest
         $login = $this->login($I, 'admin@email.com', 'adminpass');
         $token = $login['token'];
         $this->auth($I, $token);
-        $I->sendGet('/users?page=1');
+        $I->sendGet('/list/users?page=1');
         $I->seeResponseCodeIs(200);
         $I->seeResponseJsonMatchesJsonPath('$.users');
         $I->seeResponseJsonMatchesJsonPath('$.page');
