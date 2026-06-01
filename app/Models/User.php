@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Lib\Validations;
 use Core\Database\ActiveRecord\Model;
+use App\Services\ProfileImages;
 
 /**
  * @property int $id
@@ -12,6 +13,7 @@ use Core\Database\ActiveRecord\Model;
  * @property string $email
  * @property string $encrypted_password
  * @property string $avatar_file
+ * @property string $banner_file
  * @property string $role
  * @property string $created_at
  * @property string $updated_at
@@ -25,6 +27,7 @@ class User extends Model
         'email',
         'encrypted_password',
         'avatar_file',
+        'banner_file',
         'role',
         'created_at',
         'updated_at'
@@ -85,12 +88,37 @@ class User extends Model
         }
     }
 
-    public function avatarPath(): string
+    public function avatar(): ProfileImages
     {
-        if (!$this->avatar_file || $this->avatar_file === 'avatar.png') {
-            return "/assets/images/defaults/avatar.png";
-        }
+        return new ProfileImages($this, [
+            'extensions' => ['jpg', 'jpeg', 'png'],
+            'max_size' => 2 * 1024 * 1024,
+            'aspect_ratio' => [
+                'min' => 0.95,
+                'max' => 1.05,
+            ],
+        ], 'avatar_file');
+    }
 
-        return "/assets/uploads/" . $this->avatar_file;
+    public function getAvatarPath(): string
+    {
+        return $this->avatar()->path();
+    }
+
+    public function banner(): ProfileImages
+    {
+        return new ProfileImages($this, [
+            'extensions' => ['jpg', 'jpeg', 'png'],
+            'max_size' => 5 * 1024 * 1024,
+            'aspect_ratio' => [
+                'min' => 2.5,
+                'max' => 3.5,
+            ],
+        ], 'banner_file');
+    }
+
+    public function getBannerPath(): string
+    {
+        return $this->banner()->path();
     }
 }

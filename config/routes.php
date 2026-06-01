@@ -3,6 +3,7 @@
 use App\Controllers\UsersController;
 use App\Controllers\AdminController;
 use App\Controllers\HomeController;
+use App\Controllers\ProfileController;
 use Core\Router\Route;
 
 Route::post('/auth/login', [UsersController::class, 'login']);
@@ -17,11 +18,14 @@ Route::middleware('admin')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::post('/auth/logout', [UsersController::class, 'logout']);
     Route::delete('/account/delete', [UsersController::class, 'delete']);
-    Route::get('/users', [UsersController::class, 'index']);
+    Route::get('/list/users', [UsersController::class, 'listAll']);
 
-    Route::put('/profile/update', [UsersController::class, 'update']);
+    Route::get('/profile', [ProfileController::class, 'show']);
+    Route::put('/profile/update', [ProfileController::class, 'update']);
     Route::put('/change/email', [UsersController::class, 'changeEmail']);
-    Route::post('/change/avatar', [UsersController::class, 'changeAvatar']);
+    Route::post('/change/avatar', [ProfileController::class, 'updateAvatar']);
+    Route::post('/change/banner', [ProfileController::class, 'updateBanner']);
+    Route::delete('/change/avatar', [ProfileController::class, 'deleteAvatar']);
 });
 
 Route::middleware('editor')->group(function () {

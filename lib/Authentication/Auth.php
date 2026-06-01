@@ -32,7 +32,8 @@ class Auth
             'username' => $user->username,
             'role' => $user->role,
             'handle' => $user->handle,
-            'avatar_file' => $user->avatarPath()
+            'avatar_file' => $user->getAvatarPath(),
+            'banner_file' => $user->getBannerPath()
         ];
 
         return JWT::encode($playload, self::getKey(), self::$algorithm);
