@@ -116,7 +116,6 @@ class ProfileImages {
     private function isValidImage(): bool {
         if (isset($this->validations['extensions'])) {
             $this->validateImageExtension();
-            return false;
         }
 
         if (isset($this->validations['max_size'])) {
