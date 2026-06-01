@@ -11,7 +11,7 @@ class UserAccessTest extends BaseAccessTestCase
         $responseList = $this->client->request('GET', '/list/users', [
             'http_errors' => false
         ]);
-        // Se der 404 aqui, significa que a rota de listar não é /users. 
+        // Se der 404 aqui, significa que a rota de listar não é /users.
         // Se der 401, o middleware barrou com sucesso!
         $this->assertEquals(401, $responseList->getStatusCode());
 
