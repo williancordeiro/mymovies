@@ -116,6 +116,7 @@ class ProfileImages {
     private function isValidImage(): bool {
         if (isset($this->validations['extensions'])) {
             $this->validateImageExtension();
+            return false;
         }
 
         if (isset($this->validations['max_size'])) {
@@ -146,7 +147,16 @@ class ProfileImages {
 
     private function validateImageAspectRatio(): void {
         if (isset($this->validations['aspect_ratio'])) {
-            list($width, $height) = getimagesize($this->image['tmp_name']);
+            $imageInfo = getimagesize($this->image['tmp_name']);
+
+            if (!$imageInfo) {
+                $this->model->addError($this->column, 'Imagem inválida ou corrompida');
+                return;
+            }
+
+            $width = $imageInfo[0];
+            $height = $imageInfo[1];
+
             $aspectRatio = $width / $height;
 
             if ($aspectRatio < $this->validations['aspect_ratio']['min'] || $aspectRatio > $this->validations['aspect_ratio']['max']) {
