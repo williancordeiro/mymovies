@@ -90,7 +90,14 @@ class User extends Model
 
     public function avatar(): ProfileImages
     {
-        return new ProfileImages($this, [], 'avatar_file');
+        return new ProfileImages($this, [
+            'extensions' => ['jpg', 'jpeg', 'png'],
+            'max_size' => 2 * 1024 * 1024,
+            'aspect_ratio' => [
+                'min' => 0.95,
+                'max' => 1.05,
+            ],
+        ], 'avatar_file');
     }
 
     public function getAvatarPath(): string
@@ -100,7 +107,14 @@ class User extends Model
 
     public function banner(): ProfileImages
     {
-        return new ProfileImages($this, [], 'banner_file');
+        return new ProfileImages($this, [
+            'extensions' => ['jpg', 'jpeg', 'png'],
+            'max_size' => 5 * 1024 * 1024,
+            'aspect_ratio' => [
+                'min' => 2.5,
+                'max' => 3.5,
+            ],
+        ], 'banner_file');
     }
 
     public function getBannerPath(): string

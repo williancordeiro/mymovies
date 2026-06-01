@@ -84,16 +84,7 @@ class ProfileController extends Controller
             return;
         }
 
-        $service = new ProfileImages($user, [
-            'extensions' => ['jpg', 'jpeg', 'png'],
-            'max_size' => 2 * 1024 * 1024,
-            'aspect_ratio' => [
-                'min' => 0.95,
-                'max' => 1.05,
-            ],
-        ], 'avatar_file');
-
-        if ($service->update($image)) {
+        if ($user->avatar()->update($image)) {
             $token = Auth::generateToken($user);
             FlashMessage::success('Ícone de perfil atualizado com sucesso!');
             $this->json([
@@ -132,16 +123,7 @@ class ProfileController extends Controller
             return;
         }
 
-        $service = new ProfileImages($user, [
-            'extensions' => ['jpg', 'jpeg', 'png'],
-            'max_size' => 5 * 1024 * 1024,
-            'aspect_ratio' => [
-                'min' => 1.7,
-                'max' => 1.8,
-            ],
-        ], 'banner_file');
-
-        if ($service->update($image)) {
+        if ($user->banner()->update($image)) {
             $token = Auth::generateToken($user);
             FlashMessage::success('Banner atualizado com sucesso!');
             $this->json([
