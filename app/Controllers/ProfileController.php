@@ -70,6 +70,43 @@ class ProfileController extends Controller
         }
     }
 
+    public function show(Request $request): void
+    {
+        $user = $this->currentUser();
+        if (!$user) {
+            $this->json(['error' => 'Usuário não encontrado'], 401);
+            return;
+        }
+        $this->json([
+        'id'          => $user->id,
+        'username'    => $user->username,
+        'handle'      => $user->handle,
+        'email'       => $user->email,
+        'role'        => $user->role,
+        'avatar_file' => $user->getAvatarPath(),
+        'banner_file' => $user->getBannerPath()
+        ]);
+    }
+
+    public function deleteAvatar(Request $request): void
+    {
+        $user = $this->currentUser();
+        if (!$user) {
+            $this->json(['error' => 'Usuário não encontrado'], 401);
+            return;
+        }
+        if ($user->avatar()->delete()) {
+            $token = Auth::generateToken($user);
+            $this->json([
+            'message'     => 'Avatar removido com sucesso',
+            'token'       => $token,
+            'avatar_file' => $user->getAvatarPath()
+            ]);
+        } else {
+            $this->json(['error' => 'Erro ao remover o avatar'], 500);
+        }
+    }
+
     public function updateAvatar(): void
     {
         $user = $this->currentUser();
@@ -78,11 +115,12 @@ class ProfileController extends Controller
             return;
         }
 
-        $image = $_FILES['avatar_file'];
-        if (!$image || $image['error'] !== UPLOAD_ERR_OK) {
+        if (!isset($_FILES['avatar_file']) || $_FILES['avatar_file']['error'] !== UPLOAD_ERR_OK) {
             $this->json(['error' => 'Arquivo inválido'], 400);
             return;
         }
+
+        $image = $_FILES['avatar_file'];
 
         if ($user->avatar()->update($image)) {
             $token = Auth::generateToken($user);
@@ -105,7 +143,6 @@ class ProfileController extends Controller
                 'message' => 'Erro ao atualizar o ícone',
                 'errors' => $user->errors()
             ], 422);
-
         }
     }
 
@@ -144,8 +181,6 @@ class ProfileController extends Controller
                 'message' => 'Erro ao atualizar o banner',
                 'errors' => $user->errors()
             ], 422);
-
         }
     }
 }
-?>

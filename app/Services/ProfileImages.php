@@ -8,18 +8,28 @@ use Core\Database\Database;
 use PDO;
 use RuntimeException;
 
-class ProfileImages {
-
+class ProfileImages
+{
+    /**
+     * @var array<string, mixed>
+     */
     private array $image;
     private ?string $generatedFileName = null;
 
+    /**
+     * @param Model $model
+     * @param array<string, mixed> $validations
+     * @param string $column
+     */
     public function __construct(
         private Model $model,
         private array $validations = [],
         private string $column = 'avatar_file'
-    ) {}
+    ) {
+    }
 
-    public function path(): string {
+    public function path(): string
+    {
         if ($this->model->{$this->column}) {
             $absolutePath = $this->getAbsoluteSavedFilePath();
             if (file_exists($absolutePath)) {
@@ -32,7 +42,12 @@ class ProfileImages {
         return "/assets/images/defaults/{$defaultImageName}.png";
     }
 
-    public function update(array $image): bool {
+    /**
+     * @param array<string, mixed> $image
+     * @return bool
+     */
+    public function update(array $image): bool
+    {
         $this->image = $image;
 
         if (!$this->isValidImage()) {
@@ -50,8 +65,15 @@ class ProfileImages {
         return false;
     }
 
-    protected function updateFile(): bool {
-        
+    public function delete(): bool
+    {
+        $this->removeOldImage();
+        return $this->model->update([$this->column => null]);
+    }
+
+    protected function updateFile(): bool
+    {
+
         if (empty($this->image['tmp_name'])) {
             return false;
         }
@@ -73,7 +95,8 @@ class ProfileImages {
         return true;
     }
 
-    private function removeOldImage(): void {
+    private function removeOldImage(): void
+    {
         if ($this->model->{$this->column}) {
             $path = $this->getAbsoluteSavedFilePath();
             if (file_exists($path)) {
@@ -82,7 +105,8 @@ class ProfileImages {
         }
     }
 
-    private function getFileName(): string {
+    private function getFileName(): string
+    {
         $file_name_splitted = explode('.', $this->image['name']);
         $file_extension = end($file_name_splitted);
         if (!$this->generatedFileName) {
@@ -91,17 +115,20 @@ class ProfileImages {
         return $this->generatedFileName;
     }
 
-    private function getAbsoluteDestinationPath(): string {
+    private function getAbsoluteDestinationPath(): string
+    {
         return $this->storeDir() . $this->getFileName();
     }
 
-    private function baseDir(): string {
+    private function baseDir(): string
+    {
         return "/assets/uploads/{$this->model::table()}/{$this->model->id}/";
     }
 
-    private function storeDir(): string {
+    private function storeDir(): string
+    {
         $path = Constants::rootPath()->join('public' . $this->baseDir());
-        
+
         if (!is_dir($path)) {
             mkdir(directory: $path, recursive: true);
         }
@@ -109,11 +136,13 @@ class ProfileImages {
         return $path;
     }
 
-    private function getAbsoluteSavedFilePath(): string {
-       return Constants::rootPath()->join('public' . $this->baseDir())->join($this->model->{$this->column});
+    private function getAbsoluteSavedFilePath(): string
+    {
+        return Constants::rootPath()->join('public' . $this->baseDir())->join($this->model->{$this->column});
     }
 
-    private function isValidImage(): bool {
+    private function isValidImage(): bool
+    {
         if (isset($this->validations['extensions'])) {
             $this->validateImageExtension();
         }
@@ -129,22 +158,31 @@ class ProfileImages {
         return $this->model->errors($this->column) === null;
     }
 
-    private function validateImageExtension(): void {
+    private function validateImageExtension(): void
+    {
         $file_name_splitted = explode('.', $this->image['name']);
         $file_extension = end($file_name_splitted);
 
         if (!in_array($file_extension, $this->validations['extensions'])) {
-            $this->model->addError($this->column, 'A Imagem deve ser um arquivo do tipo: ' . implode(', ', $this->validations['extensions']));
+            $this->model->addError(
+                $this->column,
+                'A Imagem deve ser um arquivo do tipo: ' . implode(', ', $this->validations['extensions'])
+            );
         }
     }
 
-    private function validateImageSize(): void {
+    private function validateImageSize(): void
+    {
         if ($this->image['size'] > $this->validations['max_size']) {
-            $this->model->addError($this->column, 'A imagem excede o tamanho máximo permitido de ' . ($this->validations['max_size'] / (1024 * 1024)) . ' MB');
+            $this->model->addError(
+                $this->column,
+                'A imagem excede o tamanho máximo permitido de ' . ($this->validations['max_size'] / (1024 * 1024)) . ' MB'
+            );
         }
     }
 
-    private function validateImageAspectRatio(): void {
+    private function validateImageAspectRatio(): void
+    {
         if (isset($this->validations['aspect_ratio'])) {
             $imageInfo = getimagesize($this->image['tmp_name']);
 
@@ -158,10 +196,17 @@ class ProfileImages {
 
             $aspectRatio = $width / $height;
 
-            if ($aspectRatio < $this->validations['aspect_ratio']['min'] || $aspectRatio > $this->validations['aspect_ratio']['max']) {
-                $this->model->addError($this->column, 'A proporção da imagem deve estar entre ' . $this->validations['aspect_ratio']['min'] . ' e ' . $this->validations['aspect_ratio']['max']);
+            if (
+                $aspectRatio < $this->validations['aspect_ratio']['min'] || $aspectRatio >
+                $this->validations['aspect_ratio']['max']
+            ) {
+                $this->model->addError(
+                    $this->column,
+                    'A proporção da imagem deve estar entre ' .
+                    $this->validations['aspect_ratio']['min'] . ' e ' .
+                    $this->validations['aspect_ratio']['max']
+                );
             }
         }
     }
 }
-?>
