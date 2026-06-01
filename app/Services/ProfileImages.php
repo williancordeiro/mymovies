@@ -134,13 +134,13 @@ class ProfileImages {
         $file_extension = end($file_name_splitted);
 
         if (!in_array($file_extension, $this->validations['extensions'])) {
-            $this->model->addError($this->column, 'Invalid file extension');
+            $this->model->addError($this->column, 'A Imagem deve ser um arquivo do tipo: ' . implode(', ', $this->validations['extensions']));
         }
     }
 
     private function validateImageSize(): void {
         if ($this->image['size'] > $this->validations['max_size']) {
-            $this->model->addError($this->column, 'File size exceeds the maximum allowed');
+            $this->model->addError($this->column, 'A imagem excede o tamanho máximo permitido de ' . ($this->validations['max_size'] / (1024 * 1024)) . ' MB');
         }
     }
 
@@ -150,7 +150,7 @@ class ProfileImages {
             $aspectRatio = $width / $height;
 
             if ($aspectRatio < $this->validations['aspect_ratio']['min'] || $aspectRatio > $this->validations['aspect_ratio']['max']) {
-                $this->model->addError($this->column, 'Invalid aspect ratio');
+                $this->model->addError($this->column, 'A proporção da imagem deve estar entre ' . $this->validations['aspect_ratio']['min'] . ' e ' . $this->validations['aspect_ratio']['max']);
             }
         }
     }
