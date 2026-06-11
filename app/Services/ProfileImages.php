@@ -165,7 +165,7 @@ class ProfileImages
 
     private function validadeImageMimeType(): void
     {
-        $finfo = new \finfo(FILEINFO_MIME_TYPE);
+        $finfo = new \Finfo(FILEINFO_MIME_TYPE);
         $mimeType = $finfo->file($this->image['tmp_name']);
 
         if (!in_array($mimeType, $this->validations['mime_types'])) {
