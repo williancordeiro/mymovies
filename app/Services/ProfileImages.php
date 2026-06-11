@@ -143,6 +143,11 @@ class ProfileImages
 
     private function isValidImage(): bool
     {
+
+        if (isset($this->validations['mime_types'])) {
+            $this->validadeImageMimeType();
+        }
+
         if (isset($this->validations['extensions'])) {
             $this->validateImageExtension();
         }
@@ -156,6 +161,19 @@ class ProfileImages
         }
 
         return $this->model->errors($this->column) === null;
+    }
+
+    private function validadeImageMimeType(): void
+    {
+        $finfo = new \finfo(FILEINFO_MIME_TYPE);
+        $mimeType = $finfo->file($this->image['tmp_name']);
+
+        if (!in_array($mimeType, $this->validations['mime_types'])) {
+            $this->model->addError(
+                $this->column,
+                'Tipo de arquivo inválido ou corrompido.'
+            );
+        }
     }
 
     private function validateImageExtension(): void
@@ -187,7 +205,7 @@ class ProfileImages
             $imageInfo = getimagesize($this->image['tmp_name']);
 
             if (!$imageInfo) {
-                $this->model->addError($this->column, 'Imagem inválida ou corrompida');
+                $this->validateImageMimeType();
                 return;
             }
 

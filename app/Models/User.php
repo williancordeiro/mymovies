@@ -91,6 +91,7 @@ class User extends Model
     public function avatar(): ProfileImages
     {
         return new ProfileImages($this, [
+            'mime_types' => ['image/jpeg', 'image/png', 'image/jpg'],
             'extensions' => ['jpg', 'jpeg', 'png'],
             'max_size' => 2 * 1024 * 1024,
             'aspect_ratio' => [
@@ -108,6 +109,7 @@ class User extends Model
     public function banner(): ProfileImages
     {
         return new ProfileImages($this, [
+            'mime_types' => ['image/jpeg', 'image/png', 'image/jpg'],
             'extensions' => ['jpg', 'jpeg', 'png'],
             'max_size' => 5 * 1024 * 1024,
             'aspect_ratio' => [
