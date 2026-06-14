@@ -205,7 +205,7 @@ class ProfileImages
             $imageInfo = getimagesize($this->image['tmp_name']);
 
             if (!$imageInfo) {
-                $this->validateImageMimeType();
+                $this->validadeImageMimeType();
                 return;
             }
 
