@@ -10,6 +10,7 @@ class ProfileImagesTest extends TestCase
 {
     private Model $mockModel;
     private string $dummyImagePath;
+    private string $dummyFakeImagePath;
 
     protected function setUp(): void
     {
@@ -40,6 +41,28 @@ class ProfileImagesTest extends TestCase
 
         // Caminho de uma imagem real do próprio projeto para o getimagesize conseguir ler as dimensões
         $this->dummyImagePath = \Core\Constants\Constants::rootPath()->join('public/assets/images/defaults/banner.png');
+        $this->dummyFakeImagePath = \Core\Constants\Constants::rootPath()->join('tests/files/fake_script.png');
+    }
+
+    public function test_should_reject_invalid_image_mime_type(): void
+    {
+        $validations = ['mime_types' => ['image/jpeg', 'image/png']];
+        $service = new ProfileImages($this->mockModel, $validations, 'avatar_file');
+
+        $fakeImage = [
+            'name' => 'script_malicioso.png',
+            'tmp_name' => $this->dummyFakeImagePath,
+            'size' => 500,
+            'error' => 0
+        ];
+
+        $result = $service->update($fakeImage);
+
+        $this->assertFalse($result);
+        $this->assertStringContainsString(
+            'Tipo de arquivo inválido ou corrompido.',
+            $this->mockModel->errors('avatar_file')
+        );
     }
 
     public function test_should_reject_invalid_avatar_image_extensions(): void
