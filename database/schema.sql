@@ -20,14 +20,31 @@ DROP TABLE IF EXISTS movie_ratings;
 
 CREATE TABLE movie_ratings (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
+    user_id INTEGER UNSIGNED NOT NULL,
     movie_id INT NOT NULL,
     rating INT NOT NULL CHECK (
         rating >= 1
         AND rating <= 5
     ),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE KEY user_movie (user_id, movie_id)
+    UNIQUE KEY user_movie (user_id, movie_id),
+    CONSTRAINT `fk_ratings_user`
+        FOREIGN KEY (`user_id`) REFERENCES `users`(`id`)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+
+DROP TABLE IF EXISTS user_images;
+
+CREATE TABLE `user_images` (
+    `id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
+    `user_id` INTEGER UNSIGNED NOT NULL,
+    `image_file` VARCHAR(255) NOT NULL,
+    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    CONSTRAINT `fk_user_images_user`
+        FOREIGN KEY (`user_id`) REFERENCES `users`(`id`)
+        ON DELETE CASCADE
 );
 
 SET foreign_key_checks = 1;
