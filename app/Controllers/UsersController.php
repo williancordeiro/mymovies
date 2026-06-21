@@ -227,21 +227,27 @@ class UsersController extends Controller
             $this->json(['message' => 'Logout realizado com sucesso'], 200);
     }
 
-    /*public function ratings(Request $request): void
+    public function ratings(Request $request): void
     {
         $handle = $request->getParam('handle');
-        $db = \Core\Database\Database::getDatabaseConn();
+        $user = User::findByHandle($handle);
 
-        $query = "SELECT r.movie_id, r.rating, u.username 
-                  FROM movies_rating r 
-                  JOIN users u ON r.user_id = u.id 
-                  WHERE u.handle = ?
-                  ORDER BY r.created_at DESC";
+        if (!$user) {
+            $this->json(['error' => 'Usuário não encontrado'], 404);
+            return;
+        }
 
-        $stmt = $db->prepare($query);
-        $stmt->execute([$handle]);
-        $ratings = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        $movies = $user->ratedMovies()->get();
+        $ratingRecords = $user->ratings()->get();
 
-        $this->json(['ratings' => $ratings]);
-    }*/
+        $ratingMap = [];
+        foreach ($ratingRecords as $r) {
+            $ratingMap[$r->movie_id] = $r->rating;
+        }
+
+        $this->json(['ratings' => array_map(fn($m) => [
+            'movie_id' => $m->id,
+            'rating'   => $ratingMap[$m->id] ?? null,
+        ], $movies)]);
+    }
 }

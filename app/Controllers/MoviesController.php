@@ -6,6 +6,7 @@ use Core\Http\Controllers\Controller;
 use Core\Http\Request;
 use Lib\TheMovieDatabase;
 use Lib\Authentication\Auth;
+use App\Models\Movie;
 use App\Models\MovieRating;
 use Lib\FlashMessage;
 
@@ -28,6 +29,16 @@ class MoviesController extends Controller
         if (!$movieId || !$rating) {
             $this->json(['error' => 'Dados incompletos'], 400);
             return;
+        }
+
+        // Salva o filme localmente se ainda não existir
+        $existingMovie = Movie::findById((int) $movieId);
+        if (!$existingMovie) {
+            $tmdb = new TheMovieDatabase();
+            $movieData = $tmdb->getMovieDetails($movieId);
+            if ($movieData) {
+                Movie::saveFromTmdb($movieData);
+            }
         }
 
         $ratingRecord = MovieRating::findBy(['user_id' => $user->id, 'movie_id' => $movieId]);
@@ -60,6 +71,30 @@ class MoviesController extends Controller
                 'message' => 'Erro ao salvar avaliação!',
                 'errors' => $ratingRecord->errors()
             ], 500);
+        }
+    }
+
+    public function unrate(Request $request): void
+    {
+        $user = $this->currentUser();
+        if (!$user) {
+            $this->json(['error' => 'Não autorizado'], 401);
+            return;
+        }
+
+        $movieId = $request->getParam('movie_id');
+
+        $rating = MovieRating::findBy(['user_id' => $user->id, 'movie_id' => $movieId]);
+
+        if (!$rating) {
+            $this->json(['error' => 'Avaliação não encontrada'], 404);
+            return;
+        }
+
+        if ($rating->destroy()) {
+            $this->json(['success' => true, 'message' => 'Avaliação removida!']);
+        } else {
+            $this->json(['error' => 'Erro ao remover avaliação'], 500);
         }
     }
 }

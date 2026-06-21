@@ -1,5 +1,17 @@
 SET foreign_key_checks = 0;
 
+DROP TABLE IF EXISTS movies;
+
+CREATE TABLE `movies` (
+    `id` INTEGER UNSIGNED NOT NULL,
+    `title` VARCHAR(255) NOT NULL,
+    `overview` TEXT,
+    `poster_path` VARCHAR(255),
+    `release_date` VARCHAR(20),
+    `vote_average` DECIMAL(3,1),
+    PRIMARY KEY (`id`)
+);
+
 DROP TABLE IF EXISTS users;
 
 CREATE TABLE `users` (
@@ -29,7 +41,8 @@ CREATE TABLE `movies_rating` (
     `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`),
-    CONSTRAINT `fk_movies_rating_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+    CONSTRAINT `fk_movies_rating_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+    CONSTRAINT `fk_movies_rating_movie` FOREIGN KEY (`movie_id`) REFERENCES `movies` (`id`) ON DELETE CASCADE
 );
 
 DROP TABLE IF EXISTS user_images;

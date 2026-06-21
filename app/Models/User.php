@@ -7,7 +7,9 @@ use Core\Database\ActiveRecord\Model;
 use App\Services\ProfileImages;
 use Core\Database\ActiveRecord\HasMany;
 use App\Services\GalleryImages;
-use App\Model\MovieRating;
+use App\Models\Movie;
+use App\Models\MovieRating;
+use Core\Database\ActiveRecord\BelongsToMany;
 
 /**
  * @property int $id
@@ -142,5 +144,10 @@ class User extends Model
             'mime_types' => ['image/jpeg', 'image/png'],
             'max_size'   => 2 * 1024 * 1024,
         ]);
+    }
+
+    public function ratedMovies(): BelongsToMany
+    {
+        return $this->BelongsToMany(Movie::class, 'movies_rating', 'user_id', 'movie_id');
     }
 }
