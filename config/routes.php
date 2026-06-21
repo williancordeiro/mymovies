@@ -4,6 +4,7 @@ use App\Controllers\UsersController;
 use App\Controllers\AdminController;
 use App\Controllers\HomeController;
 use App\Controllers\ProfileController;
+use App\Controllers\MoviesController;
 use Core\Router\Route;
 use App\Controllers\GalleryController; 
 
@@ -40,7 +41,7 @@ Route::middleware('editor')->group(function () {
 Route::get('/movies/{id}', [HomeController::class, 'show']);
 
 Route::middleware('auth')->group(function () {
-    Route::post('/movies/rate', [HomeController::class, 'rate']);
+    Route::post('/movies/rate', [MoviesController::class, 'rate']);
 });
 
 

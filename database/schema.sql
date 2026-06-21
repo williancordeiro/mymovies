@@ -26,8 +26,8 @@ CREATE TABLE `movies_rating` (
         rating >= 1
         and rating <= 5
     ),
-    `created_by` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `updated_by` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`),
     CONSTRAINT `fk_movies_rating_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 );

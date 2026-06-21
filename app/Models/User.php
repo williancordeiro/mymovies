@@ -7,6 +7,7 @@ use Core\Database\ActiveRecord\Model;
 use App\Services\ProfileImages;
 use Core\Database\ActiveRecord\HasMany;
 use App\Services\GalleryImages;
+use App\Model\MovieRating;
 
 /**
  * @property int $id
@@ -88,6 +89,11 @@ class User extends Model
         ) {
             $this->encrypted_password = password_hash($value, PASSWORD_DEFAULT);
         }
+    }
+
+    public function ratings(): HasMany
+    {
+        return $this->hasMany(MovieRating::class, 'user_id');
     }
 
     public function avatar(): ProfileImages

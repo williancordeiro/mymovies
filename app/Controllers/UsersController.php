@@ -227,7 +227,7 @@ class UsersController extends Controller
             $this->json(['message' => 'Logout realizado com sucesso'], 200);
     }
 
-    public function ratings(Request $request): void
+    /*public function ratings(Request $request): void
     {
         $handle = $request->getParam('handle');
         $db = \Core\Database\Database::getDatabaseConn();
@@ -243,5 +243,5 @@ class UsersController extends Controller
         $ratings = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
         $this->json(['ratings' => $ratings]);
-    }
+    }*/
 }

@@ -5,6 +5,7 @@ namespace App\Controllers;
 use Core\Http\Controllers\Controller;
 use Core\Http\Request;
 use Lib\TheMovieDatabase;
+use App\Models\MovieRating;
 
 class HomeController extends Controller
 {
@@ -12,12 +13,19 @@ class HomeController extends Controller
     {
         $tmdb = new TheMovieDatabase();
 
-        $popularMovies = $tmdb->getPopularMovies();
+        $data = $tmdb->getPopularMovies();
 
-        $this->json(['movies' => $popularMovies]);
+        foreach ($data['results'] as &$movie) {
+            $movieId = $movie['id'];
+            $movie['mymovies_rating_average'] = MovieRating::getAverageByMovieId($movieId);
+        }
+
+        $this->json([
+            'movies' => $data
+        ]);
     }
 
-    public function rate(Request $request): void
+    /*public function rate(Request $request): void
     {
         $user = $this->currentUser();
 
@@ -52,16 +60,25 @@ class HomeController extends Controller
             'message' => 'Avaliação salva com sucesso!',
             'rating' => $rating
         ]);
-    }
+    }*/
 
 
     public function show(Request $request): void
     {
-        $id = $request->getParam('id');
-
+        $id = (int)$request->getParam('id');
         $tmdb = new TheMovieDatabase();
         $movie = $tmdb->getMovieDetails($id);
 
-        $this->json(['movie' => $movie]);
+        $movie['mymovies_rating_average'] = MovieRating::getAverageByMovieId($id);
+
+        $user = $this->currentUser();
+        if ($user) {
+            $userRating = MovieRating::findBy(['user_id' => $user->id, 'movie_id' => $id]);
+            $movie['user_rating'] = $userRating ? $userRating->rating : null;
+        }
+
+        $this->json([
+            'movie' => $movie
+        ]);
     }
 }
