@@ -40,7 +40,7 @@ class HomeController extends Controller
 
         $db = \Core\Database\Database::getDatabaseConn();
 
-        $query = "INSERT INTO movie_ratings (user_id, movie_id, rating) 
+        $query = "INSERT INTO movies_rating (user_id, movie_id, rating) 
                 VALUES (?, ?, ?) 
                 ON DUPLICATE KEY UPDATE rating = VALUES(rating)";
 

@@ -233,7 +233,7 @@ class UsersController extends Controller
         $db = \Core\Database\Database::getDatabaseConn();
 
         $query = "SELECT r.movie_id, r.rating, u.username 
-                  FROM movie_ratings r 
+                  FROM movies_rating r 
                   JOIN users u ON r.user_id = u.id 
                   WHERE u.handle = ?
                   ORDER BY r.created_at DESC";

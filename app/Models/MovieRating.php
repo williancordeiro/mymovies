@@ -6,7 +6,7 @@ use Core\Database\ActiveRecord\Model;
 
 class MovieRating extends Model
 {
-    protected static string $table = 'movie_ratings';
+    protected static string $table = 'movies_rating';
 
     protected static array $columns = [
         'user_id',
