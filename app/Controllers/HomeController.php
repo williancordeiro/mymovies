@@ -12,12 +12,19 @@ class HomeController extends Controller
     public function index(Request $request): void
     {
         $tmdb = new TheMovieDatabase();
-
         $data = $tmdb->getPopularMovies();
+        $user = $this->currentUser();
 
         foreach ($data['results'] as &$movie) {
             $movieId = $movie['id'];
             $movie['mymovies_rating_average'] = MovieRating::getAverageByMovieId($movieId);
+
+            if ($user) {
+                $userRating = MovieRating::findBy(['user_id' => $user->id, 'movie_id' => $movieId]);
+                $movie['user_rating'] = $userRating ? $userRating->rating : null;
+            } else {
+                $movie['user_rating'] = null;
+            }
         }
 
         $this->json([
@@ -72,10 +79,12 @@ class HomeController extends Controller
         $movie['mymovies_rating_average'] = MovieRating::getAverageByMovieId($id);
 
         $user = $this->currentUser();
+        $userRating = null;
         if ($user) {
-            $userRating = MovieRating::findBy(['user_id' => $user->id, 'movie_id' => $id]);
-            $movie['user_rating'] = $userRating ? $userRating->rating : null;
+            $ratingRecord = MovieRating::findBy(['user_id' => $user->id, 'movie_id' => $id]);
+            $userRating = $ratingRecord ? $ratingRecord->rating : null;
         }
+        $movie['user_rating'] = $userRating;
 
         $this->json([
             'movie' => $movie
