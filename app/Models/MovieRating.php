@@ -39,7 +39,9 @@ class MovieRating extends Model
 
     public function validates(): void
     {
-        Validations::notEmpty('rating', $this, 'A avaliação não pode ser vazia!');
+        if ($this->rating < 1 || $this->rating > 5) {
+            $this->addError('rating', 'A avaliação deve ser entre 1 e 5!');
+        }
     }
 
     public function user(): BelongsTo
