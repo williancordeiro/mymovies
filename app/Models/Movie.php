@@ -32,6 +32,10 @@ class Movie extends Model
     protected ?string $release_date = null;
     protected ?float $vote_average = null;
 
+
+    /**
+    * @param array<string, mixed> $data
+    */
     public static function saveFromTmdb(array $data): void
     {
         $pdo = Database::getDatabaseConn();

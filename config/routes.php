@@ -6,7 +6,7 @@ use App\Controllers\HomeController;
 use App\Controllers\ProfileController;
 use App\Controllers\MoviesController;
 use Core\Router\Route;
-use App\Controllers\GalleryController; 
+use App\Controllers\GalleryController;
 
 Route::post('/auth/login', [UsersController::class, 'login']);
 Route::post('/auth/register', [UsersController::class, 'create']);

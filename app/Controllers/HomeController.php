@@ -55,8 +55,8 @@ class HomeController extends Controller
 
         $db = \Core\Database\Database::getDatabaseConn();
 
-        $query = "INSERT INTO movies_rating (user_id, movie_id, rating) 
-                VALUES (?, ?, ?) 
+        $query = "INSERT INTO movies_rating (user_id, movie_id, rating)
+                VALUES (?, ?, ?)
                 ON DUPLICATE KEY UPDATE rating = VALUES(rating)";
 
         $stmt = $db->prepare($query);

@@ -238,6 +238,7 @@ class UsersController extends Controller
         }
 
         $movies = $user->ratedMovies()->get();
+        /** @var \App\Models\MovieRating[] $ratingRecords */
         $ratingRecords = $user->ratings()->get();
 
         $ratingMap = [];
