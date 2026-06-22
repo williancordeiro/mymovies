@@ -3,26 +3,20 @@
 namespace Tests\Integration\Access;
 
 use App\Models\Movie;
+use Database\Populate\MoviesPopulate;
 
 class MovieRatingAccessTest extends BaseAccessTestCase
 {
     public function setUp(): void
     {
         parent::setUp();
-
-        Movie::saveFromTmdb([
-            'id' => 1226863,
-            'title' => 'Filme de Teste',
-            'overview' => 'Descrição',
-            'poster_path' => '/poster.png',
-            'release_date' => '2024-01-01',
-            'vote_average' => 8.0
-        ]);
+        MoviesPopulate::populate();
     }
+
     public function test_movie_rating_routes_should_require_authentication(): void
     {
         $responseRate = $this->client->request('POST', '/movies/rate', [
-            'json' => ['movie_id' => 1226863, 'rating' => 5]
+            'json' => ['movie_id' => 1275779, 'rating' => 5]
         ]);
         $this->assertEquals(401, $responseRate->getStatusCode());
 
@@ -39,11 +33,11 @@ class MovieRatingAccessTest extends BaseAccessTestCase
 
         $responseRate = $this->client->request('POST', '/movies/rate', [
             'headers' => ['Authorization' => 'Bearer ' . $token],
-            'json' => ['movie_id' => 1226863, 'rating' => 5]
+            'json' => ['movie_id' => 1275779, 'rating' => 3]
         ]);
         $this->assertEquals(200, $responseRate->getStatusCode());
 
-        $responseUnrate = $this->client->request('DELETE', '/movies/rate/1226863', [
+        $responseUnrate = $this->client->request('DELETE', '/movies/rate/1275779', [
             'headers' => ['Authorization' => 'Bearer ' . $token]
         ]);
         $this->assertEquals(200, $responseUnrate->getStatusCode());
