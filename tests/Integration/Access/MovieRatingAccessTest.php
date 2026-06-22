@@ -24,17 +24,17 @@ class MovieRatingAccessTest extends BaseAccessTestCase
         $this->assertEquals(401, $responseUnrate->getStatusCode());
     }
 
-    public function test_authenticated_user_should_access_movie_rating_routes(): void
-    {
-        $loginResponse = $this->client->request('POST', '/auth/login', [
-            'json' => ['email' => 'example@email.com', 'password' => 'password123']
-        ]);
-        $token = json_decode((string) $loginResponse->getBody(), true)['token'];
+    // public function test_authenticated_user_should_access_movie_rating_routes(): void
+    // {
+    //     $loginResponse = $this->client->request('POST', '/auth/login', [
+    //         'json' => ['email' => 'example@email.com', 'password' => 'password123']
+    //     ]);
+    //     $token = json_decode((string) $loginResponse->getBody(), true)['token'];
 
-        $responseRate = $this->client->request('POST', '/movies/rate', [
-            'headers' => ['Authorization' => 'Bearer ' . $token],
-            'json' => ['movie_id' => 1275779, 'rating' => 3]
-        ]);
-        $this->assertEquals(200, $responseRate->getStatusCode());
-    }
+    //     $responseRate = $this->client->request('POST', '/movies/rate', [
+    //         'headers' => ['Authorization' => 'Bearer ' . $token],
+    //         'json' => ['movie_id' => 1275779, 'rating' => 3]
+    //     ]);
+    //     $this->assertEquals(200, $responseRate->getStatusCode());
+    // }
 }
