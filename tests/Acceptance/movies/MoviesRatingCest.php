@@ -17,14 +17,15 @@ class MoviesRatingCest extends BaseAcceptanceCest
         parent::_before($I);
         UsersPopulate::populate();
 
-        Movie::saveFromTmdb([
-            'id' => 1226863,
-            'title' => 'Filme de Teste',
-            'overview' => 'Um filme fictício',
-            'poster_path' => '/teste.png',
-            'release_date' => '2024-01-01',
-            'vote_average' => 7.5
-        ]);
+        $movie = new Movie();
+        $movie->id = 1226863;
+        $movie->title = 'Filme de Teste';
+        $movie->overview = 'Um filme fictício';
+        $movie->poster_path = '/teste.png';
+        $movie->release_date = '2024-01-01';
+        $movie->vote_average = 7.5;
+        $movie->save(); // Persiste diretamente na tabela local 'movies'
+
 
         $loginData = $this->login($I, 'example@email.com', 'password123');
         $this->token = $loginData['token'] ?? '';
@@ -106,7 +107,9 @@ class MoviesRatingCest extends BaseAcceptanceCest
         $I->haveHttpHeader('Authorization', 'Bearer ' . $this->token);
         $I->sendPost('/movies/rate', json_encode(['movie_id' => 1226863, 'rating' => 4]));
 
-        $I->sendDelete('/movies/rate/1226863'); // corrigido
+        // CORREÇÃO: Adicionando o Token de autorização para permitir o DELETE autenticado
+        $I->haveHttpHeader('Authorization', 'Bearer ' . $this->token);
+        $I->sendDelete('/movies/rate/1226863');
         $I->seeResponseCodeIs(200);
         $I->seeResponseContainsJson(['success' => true]);
     }
