@@ -2,8 +2,23 @@
 
 namespace Tests\Integration\Access;
 
+use App\Models\Movie;
+
 class MovieRatingAccessTest extends BaseAccessTestCase
 {
+    public function setUp(): void
+    {
+        parent::setUp();
+
+        Movie::saveFromTmdb([
+            'id' => 1226863,
+            'title' => 'Filme de Teste',
+            'overview' => 'Descrição',
+            'poster_path' => '/poster.png',
+            'release_date' => '2024-01-01',
+            'vote_average' => 8.0
+        ]);
+    }
     public function test_movie_rating_routes_should_require_authentication(): void
     {
         $responseRate = $this->client->request('POST', '/movies/rate', [
