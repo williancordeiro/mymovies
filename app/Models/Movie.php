@@ -38,6 +38,12 @@ class Movie extends Model
     */
     public static function saveFromTmdb(array $data): void
     {
+
+    
+        if (!isset($data['id'])) {
+            return;
+        }
+        
         $pdo = Database::getDatabaseConn();
         $sql = "INSERT IGNORE INTO movies (id, title, overview, poster_path, release_date, vote_average)
                 VALUES (:id, :title, :overview, :poster_path, :release_date, :vote_average)";
