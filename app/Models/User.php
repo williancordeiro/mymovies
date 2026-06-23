@@ -5,6 +5,11 @@ namespace App\Models;
 use Lib\Validations;
 use Core\Database\ActiveRecord\Model;
 use App\Services\ProfileImages;
+use Core\Database\ActiveRecord\HasMany;
+use App\Services\GalleryImages;
+use App\Models\Movie;
+use App\Models\MovieRating;
+use Core\Database\ActiveRecord\BelongsToMany;
 
 /**
  * @property int $id
@@ -88,6 +93,11 @@ class User extends Model
         }
     }
 
+    public function ratings(): HasMany
+    {
+        return $this->hasMany(MovieRating::class, 'user_id');
+    }
+
     public function avatar(): ProfileImages
     {
         return new ProfileImages($this, [
@@ -120,5 +130,24 @@ class User extends Model
     public function getBannerPath(): string
     {
         return $this->banner()->path();
+    }
+
+    public function images(): HasMany
+    {
+        return $this->hasMany(UserImage::class, 'user_id');
+    }
+
+    public function gallery(): GalleryImages
+    {
+        return new GalleryImages($this, [
+            'extensions' => ['jpg', 'jpeg', 'png'],
+            'mime_types' => ['image/jpeg', 'image/png'],
+            'max_size'   => 2 * 1024 * 1024,
+        ]);
+    }
+
+    public function ratedMovies(): BelongsToMany
+    {
+        return $this->BelongsToMany(Movie::class, 'movies_rating', 'user_id', 'movie_id');
     }
 }

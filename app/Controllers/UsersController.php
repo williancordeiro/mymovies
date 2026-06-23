@@ -230,18 +230,25 @@ class UsersController extends Controller
     public function ratings(Request $request): void
     {
         $handle = $request->getParam('handle');
-        $db = \Core\Database\Database::getDatabaseConn();
+        $user = User::findByHandle($handle);
 
-        $query = "SELECT r.movie_id, r.rating, u.username 
-                  FROM movie_ratings r 
-                  JOIN users u ON r.user_id = u.id 
-                  WHERE u.handle = ?
-                  ORDER BY r.created_at DESC";
+        if (!$user) {
+            $this->json(['error' => 'Usuário não encontrado'], 404);
+            return;
+        }
 
-        $stmt = $db->prepare($query);
-        $stmt->execute([$handle]);
-        $ratings = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        $movies = $user->ratedMovies()->get();
+        /** @var \App\Models\MovieRating[] $ratingRecords */
+        $ratingRecords = $user->ratings()->get();
 
-        $this->json(['ratings' => $ratings]);
+        $ratingMap = [];
+        foreach ($ratingRecords as $r) {
+            $ratingMap[$r->movie_id] = $r->rating;
+        }
+
+        $this->json(['ratings' => array_map(fn($m) => [
+            'movie_id' => $m->id,
+            'rating'   => $ratingMap[$m->id] ?? null,
+        ], $movies)]);
     }
 }

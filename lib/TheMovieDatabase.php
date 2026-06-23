@@ -15,7 +15,16 @@ class TheMovieDatabase
 
     public function getPopularMovies()
     {
-        $url = "https://api.themoviedb.org/3/movie/popular?language=en-US&page=1";
+        $query = http_build_query([
+            'language' => 'pt-BR',
+            'page' => 1,
+            'sort_by' => 'popularity.desc',
+            'include_adult' => 'false',
+            'certification_country' => 'US',
+            'certification.lte' => 'PG-13',
+            'vote_count.gte' => 200,
+        ]);
+        $url = "https://api.themoviedb.org/3/discover/movie?{$query}";
         $headers = [
             "Authorization: Bearer {$this->readToken}",
             "Accept: application/json"
