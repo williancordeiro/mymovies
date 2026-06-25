@@ -5,6 +5,7 @@ namespace App\Controllers;
 use Core\Http\Controllers\Controller;
 use Core\Http\Request;
 use Lib\TheMovieDatabase;
+use App\Models\Movie;
 use App\Models\MovieRating;
 
 class HomeController extends Controller
@@ -14,6 +15,14 @@ class HomeController extends Controller
         $tmdb = new TheMovieDatabase();
         $data = $tmdb->getPopularMovies();
         $user = $this->currentUser();
+
+        // Fallback offline: se o TMDB não respondeu, usa os filmes do banco local.
+        if (!is_array($data) || empty($data['results'])) {
+            $data = ['results' => array_map(
+                fn(Movie $m) => self::movieToArray($m),
+                Movie::all()
+            )];
+        }
 
         foreach ($data['results'] as &$movie) {
             $movieId = $movie['id'];
@@ -76,6 +85,18 @@ class HomeController extends Controller
         $tmdb = new TheMovieDatabase();
         $movie = $tmdb->getMovieDetails($id);
 
+        // Fallback offline: se o TMDB não respondeu, usa o filme do banco local.
+        if (!is_array($movie) || empty($movie['id'])) {
+            $localMovie = Movie::findById($id);
+
+            if (!$localMovie) {
+                $this->json(['error' => 'Filme não encontrado'], 404);
+                return;
+            }
+
+            $movie = self::movieToArray($localMovie);
+        }
+
         $movie['mymovies_rating_average'] = MovieRating::getAverageByMovieId($id);
 
         $user = $this->currentUser();
@@ -89,5 +110,28 @@ class HomeController extends Controller
         $this->json([
             'movie' => $movie
         ]);
+    }
+
+    /**
+     * Converte um Movie do banco local no mesmo formato esperado pelo frontend
+     * (mesma estrutura que o TMDB retorna). Campos exclusivos do TMDB
+     * (genres, runtime, tagline, backdrop_path) ficam vazios offline.
+     *
+     * @return array<string, mixed>
+     */
+    private static function movieToArray(Movie $movie): array
+    {
+        return [
+            'id'            => $movie->id,
+            'title'         => $movie->title,
+            'overview'      => $movie->overview,
+            'poster_path'   => $movie->poster_path,
+            'backdrop_path' => null,
+            'release_date'  => $movie->release_date,
+            'vote_average'  => $movie->vote_average,
+            'genres'        => [],
+            'runtime'       => null,
+            'tagline'       => null,
+        ];
     }
 }

@@ -8,16 +8,37 @@ use Lib\TheMovieDatabase;
 
 class MovieRatingsPopulate {
 
+    private const SEED_FILE = __DIR__ . '/../seeds/movies.json';
+
     public static function populate(): void {
 
         $tmdb = new TheMovieDatabase();
 
         $movieIds = [936075, 1275779, 1226863, 1228710, 1007757, 687163, 454639, 83533, 862];
 
+        // cache local com os dados dos filmes para rodar o populate offline
+        $seed = [];
+        if (file_exists(self::SEED_FILE)) {
+            foreach (json_decode(file_get_contents(self::SEED_FILE), true) ?? [] as $m) {
+                $seed[$m['id']] = $m;
+            }
+        }
+
         foreach ($movieIds as $id) {
-            $data = $tmdb->getMovieDetails($id);
+            // cache-first: usa o cache local (offline e instantâneo).
+            // Só vai no TMDB se o filme não estiver no cache (ex: filme novo).
+            $data = $seed[$id] ?? null;
+            if (!$data) {
+                $tmdbData = $tmdb->getMovieDetails($id);
+                if (is_array($tmdbData) && !empty($tmdbData['id'])) {
+                    $data = $tmdbData;
+                }
+            }
+
             if ($data && isset($data['id'])) {
                 Movie::saveFromTmdb($data);
+            } else {
+                die("Filme {$id} indisponível: sem internet e sem cache em " . self::SEED_FILE . "\n");
             }
         }
 

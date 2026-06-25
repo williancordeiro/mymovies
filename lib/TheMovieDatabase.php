@@ -32,9 +32,11 @@ class TheMovieDatabase
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 8);
         $response = curl_exec($ch);
         curl_close($ch);
-        return json_decode($response, true);
+        return is_string($response) ? json_decode($response, true) : null;
     }
 
     public function getMovieDetails($id)
@@ -47,8 +49,10 @@ class TheMovieDatabase
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 8);
         $response = curl_exec($ch);
         curl_close($ch);
-        return json_decode($response, true);
+        return is_string($response) ? json_decode($response, true) : null;
     }
 }

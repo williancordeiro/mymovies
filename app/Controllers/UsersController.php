@@ -246,9 +246,15 @@ class UsersController extends Controller
             $ratingMap[$r->movie_id] = $r->rating;
         }
 
+        // Devolve os dados do filme direto do banco local, pra o perfil renderizar
+        // sem precisar buscar cada filme um a um (offline e instantâneo).
         $this->json(['ratings' => array_map(fn($m) => [
-            'movie_id' => $m->id,
-            'rating'   => $ratingMap[$m->id] ?? null,
+            'movie_id'     => $m->id,
+            'title'        => $m->title,
+            'poster_path'  => $m->poster_path,
+            'release_date' => $m->release_date,
+            'vote_average' => $m->vote_average,
+            'rating'       => $ratingMap[$m->id] ?? null,
         ], $movies)]);
     }
 }
