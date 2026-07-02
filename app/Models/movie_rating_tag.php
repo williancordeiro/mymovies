@@ -14,46 +14,33 @@ use PDO;
  * @property int $user_id
  * @property int $movie_id
  * @property int $rating
- * @property int
  * @property string $created_at
  * @property string $updated_at
  */
 
-class MovieRating extends Model
+class MovieRatingTag extends Model
 {
-    protected static string $table = 'movies_rating';
+    protected static string $table = 'movies_rating_tags';
 
     protected static array $columns = [
-        'user_id',
-        'movie_id',
-        'rating',
+        'movie_rating__id',
+        'rating_tag_id',
         'created_at',
         'updated_at'
     ];
 
     protected ?int $id = null;
-    protected int $user_id;
-    protected int $movie_id;
-    protected int $rating;
+    protected int $movie_rating_id;
+    protected int $rating_tag_id;
     protected ?string $created_at = null;
     protected ?string $updated_at = null;
 
-    public function validates(): void
+    
+    public function movieRating(): BelongsTo
     {
-        if ($this->rating < 1 || $this->rating > 5) {
-            $this->addError('rating', 'A avaliação deve ser entre 1 e 5!');
-        }
+        return $this->belongsTo(movieRating::class, 'movie_rating_id');
     }
 
-    public function user(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'user_id');
-    }
-
-    public static function getRatingForUserId(int $userId): MovieRating | null
-    {
-        return MovieRating::findBy(['user_id' => $userId]);
-    }
 
     public static function getAverageByMovieId(int $movieId): float
     {
@@ -73,10 +60,5 @@ class MovieRating extends Model
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
         return $result['movie_rating'] ? round((float) $result['movie_rating'], 1) : 0.0;
-    }
-
-    public static function getTagsByRatingTagId(int $rating_tag_id): RatingTag | null 
-    {
-        return RatingTag::findBY([`rating_tag_id` => $ratingTagId]);
     }
 }

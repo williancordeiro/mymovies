@@ -45,6 +45,27 @@ CREATE TABLE `movies_rating` (
     CONSTRAINT `fk_movies_rating_movie` FOREIGN KEY (`movie_id`) REFERENCES `movies` (`id`) ON DELETE CASCADE
 );
 
+DROP TABLE IF EXISTS movies_rating_tags;
+
+CREATE TABLE `movies_rating_tags` (
+    `id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
+    `movie_rating_id` INTEGER  UNSIGNED NOT NULL,
+    `rating_tag_id` INTEGER UNSIGNED NOT NULL,
+    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    CONSTRAINT `fk_movies_rating` FOREIGN KEY (`movie_rating_id`) REFERENCES `movie_rating` (`id`) ON DELETE CASCADE,
+    CONSTRAINT `fk_rating_tag` FOREIGN KEY (`rating_tag_id`) REFERENCES `rating_tags` (`id`) ON DELETE CASCADE
+);
+
+CREATE TABLE `rating_tags` (
+    `id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
+    `tag` TEXT,
+    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+)
+
 DROP TABLE IF EXISTS user_images;
 
 CREATE TABLE `user_images` (
