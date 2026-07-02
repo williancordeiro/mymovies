@@ -14,6 +14,7 @@ use PDO;
  * @property int $user_id
  * @property int $movie_id
  * @property int $rating
+ * @property ?string $tag;
  * @property string $created_at
  * @property string $updated_at
  */
@@ -26,6 +27,7 @@ class MovieRating extends Model
         'user_id',
         'movie_id',
         'rating',
+        'tag',
         'created_at',
         'updated_at'
     ];
@@ -34,6 +36,7 @@ class MovieRating extends Model
     protected int $user_id;
     protected int $movie_id;
     protected int $rating;
+    protected ?string $tag = null;
     protected ?string $created_at = null;
     protected ?string $updated_at = null;
 

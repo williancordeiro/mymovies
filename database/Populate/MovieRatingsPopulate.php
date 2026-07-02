@@ -16,7 +16,6 @@ class MovieRatingsPopulate {
 
         $movieIds = [936075, 1275779, 1226863, 1228710, 1007757, 687163, 454639, 83533, 862];
 
-        // cache local com os dados dos filmes para rodar o populate offline
         $seed = [];
         if (file_exists(self::SEED_FILE)) {
             foreach (json_decode(file_get_contents(self::SEED_FILE), true) ?? [] as $m) {
@@ -25,8 +24,6 @@ class MovieRatingsPopulate {
         }
 
         foreach ($movieIds as $id) {
-            // cache-first: usa o cache local (offline e instantâneo).
-            // Só vai no TMDB se o filme não estiver no cache (ex: filme novo).
             $data = $seed[$id] ?? null;
             if (!$data) {
                 $tmdbData = $tmdb->getMovieDetails($id);

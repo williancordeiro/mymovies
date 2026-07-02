@@ -25,6 +25,7 @@ class MoviesController extends Controller
 
         $movieId = $decode['movie_id'] ?? $request->getParam('movie_id');
         $rating = $decode['rating'] ?? $request->getParam('rating');
+        $tag = $decode['tag'] ?? $request->getParam('tag');
 
         if (!$movieId || !$rating) {
             $this->json(['error' => 'Dados incompletos'], 400);

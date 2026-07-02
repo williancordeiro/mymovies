@@ -45,6 +45,9 @@ CREATE TABLE `movies_rating` (
     CONSTRAINT `fk_movies_rating_movie` FOREIGN KEY (`movie_id`) REFERENCES `movies` (`id`) ON DELETE CASCADE
 );
 
+
+CREATE TABLE `movies_rating` (
+
 DROP TABLE IF EXISTS user_images;
 
 CREATE TABLE `user_images` (
