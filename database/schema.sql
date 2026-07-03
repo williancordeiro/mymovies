@@ -8,7 +8,7 @@ CREATE TABLE `movies` (
     `overview` TEXT,
     `poster_path` VARCHAR(255),
     `release_date` VARCHAR(20),
-    `vote_average` DECIMAL(3,1),
+    `vote_average` DECIMAL(3, 1),
     PRIMARY KEY (`id`)
 );
 
@@ -25,6 +25,15 @@ CREATE TABLE `users` (
     `banner_file` VARCHAR(255) DEFAULT 'banner.png',
     `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`)
+);
+
+DROP TABLE IF EXISTS rating_tags;
+
+CREATE TABLE `rating_tags` (
+    `id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
+    `description` VARCHAR(64) NOT NULL,
+    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`)
 );
 
@@ -54,6 +63,17 @@ CREATE TABLE `user_images` (
     `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`),
     CONSTRAINT `fk_user_images_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+);
+
+DROP TABLE IF EXISTS movies_rating_tags;
+
+CREATE TABLE `movies_rating_tags` (
+    `id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
+    `movie_rating_id` INTEGER UNSIGNED NOT NULL,
+    `rating_tag_id` INTEGER UNSIGNED NOT NULL,
+    PRIMARY KEY (`id`),
+    CONSTRAINT `fk_movies_rating_tags_movie_rating` FOREIGN KEY (`movie_rating_id`) REFERENCES `movies_rating` (`id`) ON DELETE CASCADE,
+    CONSTRAINT `fk_movies_rating_tags_rating_tag` FOREIGN KEY (`rating_tag_id`) REFERENCES `rating_tags` (`id`) ON DELETE CASCADE
 );
 
 SET foreign_key_checks = 1;
