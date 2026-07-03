@@ -9,6 +9,7 @@ use Lib\Authentication\Auth;
 use App\Models\Movie;
 use App\Models\MovieRating;
 use Lib\FlashMessage;
+use App\Services\MovieRatingService;
 
 class MoviesController extends Controller
 {
@@ -25,6 +26,10 @@ class MoviesController extends Controller
 
         $movieId = $decode['movie_id'] ?? $request->getParam('movie_id');
         $rating = $decode['rating'] ?? $request->getParam('rating');
+        $tags = $decode['tags'] ?? $request->getParam('tags') ?? [];
+        $userId = $user->id;
+
+        error_log("DEBUG: movie_id: " . $movieId . " | rating: " . $rating);
 
         if (!$movieId || !$rating) {
             $this->json(['error' => 'Dados incompletos'], 400);
@@ -41,7 +46,7 @@ class MoviesController extends Controller
             }
         }
 
-        $ratingRecord = MovieRating::findBy(['user_id' => $user->id, 'movie_id' => $movieId]);
+        /*$ratingRecord = MovieRating::findBy(['user_id' => $user->id, 'movie_id' => $movieId]);
 
         if ($ratingRecord) {
             $ratingRecord->rating = (int)$rating;
@@ -70,6 +75,32 @@ class MoviesController extends Controller
                 'success' => false,
                 'message' => 'Erro ao salvar avaliação!',
                 'errors' => $ratingRecord->errors()
+            ], 500);
+        }*/
+
+        
+
+        try {
+            $service = new MovieRatingService();
+            $service->processRating($userId, (int)$movieId, (int)$rating, $tags);
+
+            FlashMessage::success('Avaliação salva com sucesso!');
+            $this->json([
+                'success' => true,
+                'message' => 'Avaliação salva com sucesso!',
+                'data' => [
+                    'movie_id' => $movieId,
+                    'rating' => $rating,
+                    'tags' => $tags,
+                    'average_rating' => MovieRating::getAverageByMovieId($movieId)
+                ]
+            ], 200);
+        } catch (\Exception $e) {
+            FlashMessage::danger('Erro ao salvar avaliação!');
+            $this->json([
+                'success' => false,
+                'message' => 'Erro ao salvar avaliação!',
+                'error' => [$e->getMessage()]
             ], 500);
         }
     }

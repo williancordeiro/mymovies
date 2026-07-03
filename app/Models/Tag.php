@@ -6,6 +6,7 @@ use Core\Database\ActiveRecord\Model;
 use Lib\Validations;
 use Core\Database\ActiveRecord\HasMany;
 use Core\Database\ActiveRecord\BelongsTo;
+use Core\Database\ActiveRecord\BelongsToMany;
 use Core\Database\Database;
 use PDO;
 
@@ -34,5 +35,8 @@ class Tag extends Model
         }
     }
 
-    
+    public function movieRatings(): BelongsToMany
+    {
+        return $this->BelongsToMany(MovieRating::class, 'movies_rating_tags', 'rating_tag_id', 'movie_rating_id');
+    }
 }

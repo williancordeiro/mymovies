@@ -6,6 +6,7 @@ use Core\Database\ActiveRecord\Model;
 use Lib\Validations;
 use Core\Database\ActiveRecord\HasMany;
 use Core\Database\ActiveRecord\BelongsTo;
+use Core\Database\ActiveRecord\BelongsToMany;
 use Core\Database\Database;
 use PDO;
 
@@ -52,6 +53,16 @@ class MovieRating extends Model
     public static function getRatingForUserId(int $userId): MovieRating | null
     {
         return MovieRating::findBy(['user_id' => $userId]);
+    }
+
+    public static function findByUserAndMovie(int $userId, int $movieId): ?MovieRating
+    {
+        return MovieRating::findBy(['user_id' => $userId, 'movie_id' => $movieId]);
+    }
+
+    public function tags(): BelongsToMany
+    {
+        return $this->BelongsToMany(Tag::class, 'movies_rating_tags', 'movie_rating_id', 'rating_tag_id');
     }
 
     public static function getAverageByMovieId(int $movieId): float

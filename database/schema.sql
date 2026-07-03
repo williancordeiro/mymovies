@@ -71,7 +71,13 @@ CREATE TABLE `movies_rating_tags` (
     `id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
     `movie_rating_id` INTEGER UNSIGNED NOT NULL,
     `rating_tag_id` INTEGER UNSIGNED NOT NULL,
+    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`),
+    UNIQUE KEY `unique_movie_rating_tag` (
+        `movie_rating_id`,
+        `rating_tag_id`
+    ),
     CONSTRAINT `fk_movies_rating_tags_movie_rating` FOREIGN KEY (`movie_rating_id`) REFERENCES `movies_rating` (`id`) ON DELETE CASCADE,
     CONSTRAINT `fk_movies_rating_tags_rating_tag` FOREIGN KEY (`rating_tag_id`) REFERENCES `rating_tags` (`id`) ON DELETE CASCADE
 );

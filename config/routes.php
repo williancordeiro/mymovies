@@ -5,12 +5,14 @@ use App\Controllers\AdminController;
 use App\Controllers\HomeController;
 use App\Controllers\ProfileController;
 use App\Controllers\MoviesController;
+use App\Controllers\TagsController;
 use Core\Router\Route;
 use App\Controllers\GalleryController;
 
 Route::post('/auth/login', [UsersController::class, 'login']);
 Route::post('/auth/register', [UsersController::class, 'create']);
 Route::get('/movies', [HomeController::class, 'index']);
+Route::get('/tags', [TagsController::class, 'listAll']);
 
 Route::get('/flash', [FlashController::class, 'flash']);
 Route::middleware('admin')->group(function () {
