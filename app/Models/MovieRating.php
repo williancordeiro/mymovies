@@ -6,6 +6,9 @@ use Core\Database\ActiveRecord\Model;
 use Lib\Validations;
 use Core\Database\ActiveRecord\HasMany;
 use Core\Database\ActiveRecord\BelongsTo;
+use Core\Database\ActiveRecord\BelongsToMany;
+use App\Models\RatingTag;
+use App\Models\MovieRatingTag;
 use Core\Database\Database;
 use PDO;
 
@@ -75,8 +78,13 @@ class MovieRating extends Model
         return $result['movie_rating'] ? round((float) $result['movie_rating'], 1) : 0.0;
     }
 
-    public static function getTagsByRatingTagId(int $rating_tag_id): RatingTag | null 
+    public function tags(): BelongsToMany
     {
-        return RatingTag::findBY([`rating_tag_id` => $ratingTagId]);
+        return $this->BelongsToMany(RatingTag::class, 'movies_rating_tags', 'movie_rating_id', 'rating_tag_id');
+    }
+
+    public function ratingTags(): HasMany
+    {
+        return $this->hasMany(MovieRatingTag::class, 'movie_rating_id');
     }
 }

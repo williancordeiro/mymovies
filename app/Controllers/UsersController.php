@@ -231,24 +231,32 @@ class UsersController extends Controller
     {
         $handle = $request->getParam('handle');
         $user = User::findByHandle($handle);
-
         if (!$user) {
             $this->json(['error' => 'Usuário não encontrado'], 404);
             return;
         }
 
         $movies = $user->ratedMovies()->get();
-        /** @var \App\Models\MovieRating[] $ratingRecords */
+
+    /** @var \App\Models\MovieRating[] $ratingRecords */
         $ratingRecords = $user->ratings()->get();
 
         $ratingMap = [];
         foreach ($ratingRecords as $r) {
-            $ratingMap[$r->movie_id] = $r->rating;
+            $ratingMap[$r->movie_id] = [
+            'rating' => $r->rating,
+            'rating_id' => $r->id,
+            'tags' => array_map(fn($movieRatingTag) => [
+                'id' => $movieRatingTag->rating_tag_id,
+                'tag' => \App\Models\RatingTag::findById($movieRatingTag->rating_tag_id)->tag ?? null
+            ], $r->ratingTags()->get())
+            ];
         }
 
         $this->json(['ratings' => array_map(fn($m) => [
-            'movie_id' => $m->id,
-            'rating'   => $ratingMap[$m->id] ?? null,
-        ], $movies)]);
+        'movie_id' => $m->id,
+        'rating'   => $ratingMap[$m->id]['rating'] ?? null,
+        'tags'     => $ratingMap[$m->id]['tags'] ?? []
+    ], $movies)]);
     }
 }

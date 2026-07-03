@@ -43,6 +43,7 @@ Route::get('/movies/{id}', [HomeController::class, 'show']);
 Route::middleware('auth')->group(function () {
     Route::post('/movies/rate', [MoviesController::class, 'rate']);
     Route::delete('/movies/rate/{movie_id}', [MoviesController::class, 'unrate']);
+    Route::get('/rating-tags', [MoviesController::class, 'listTags']);
 });
 
 

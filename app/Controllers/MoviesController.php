@@ -5,7 +5,9 @@ namespace App\Controllers;
 use Core\Http\Controllers\Controller;
 use Core\Http\Request;
 use Lib\TheMovieDatabase;
+use App\Models\MovieRatingTag;
 use Lib\Authentication\Auth;
+use App\Models\RatingTag;
 use App\Models\Movie;
 use App\Models\MovieRating;
 use Lib\FlashMessage;
@@ -25,9 +27,9 @@ class MoviesController extends Controller
 
         $movieId = $decode['movie_id'] ?? $request->getParam('movie_id');
         $rating = $decode['rating'] ?? $request->getParam('rating');
-        $ratingTag = $decode['rating_tag'] ?? $request->getParam('rating_tag');
+        $tagIds = $decode['tag_ids'] ?? [];
 
-        if (!$movieId || !$rating || $rating_tag) {
+        if (!$movieId || !$rating) {
             $this->json(['error' => 'Dados incompletos'], 400);
             return;
         }
@@ -55,23 +57,34 @@ class MoviesController extends Controller
         }
 
         if ($ratingRecord->save()) {
-            FlashMessage::success('Avaliação salva com sucesso!');
+    // Associa as tags à avaliação
+            foreach ($tagIds as $tagId) {
+                $existing = MovieRatingTag::findBy([
+                    'movie_rating_id' => $ratingRecord->id,
+                    'rating_tag_id' => $tagId
+                ]);
+                if (!$existing) {
+                    $movieRatingTag = new MovieRatingTag([
+                        'movie_rating_id' => $ratingRecord->id,
+                        'rating_tag_id' => $tagId
+                    ]);
+                    $movieRatingTag->save();
+                }
+            }
+
             $this->json([
-                'success' => true,
-                'message' => 'Avaliação salva com sucesso!',
-                'data' => [
-                    'movie_id' => $movieId,
-                    'rating' => (int)$rating,
-                    'average_rating' => MovieRating::getAverageByMovieId($movieId)
-                ]
+            'success' => true,
+            'message' => 'Avaliação salva com sucesso!',
+            'data' => [
+            'movie_id' => $movieId,
+            'rating' => (int)$rating,
+            'tags' => array_map(fn($tagId) => [
+            'id' => $tagId,
+            'tag' => RatingTag::findById($tagId)->tag ?? null
+        ], $tagIds),
+            'average_rating' => MovieRating::getAverageByMovieId($movieId)
+            ]
             ], 200);
-        } else {
-            FlashMessage::danger('Erro ao salvar avaliação!');
-            $this->json([
-                'success' => false,
-                'message' => 'Erro ao salvar avaliação!',
-                'errors' => $ratingRecord->errors()
-            ], 500);
         }
     }
 
@@ -97,5 +110,16 @@ class MoviesController extends Controller
         } else {
             $this->json(['error' => 'Erro ao remover avaliação'], 500);
         }
+    }
+
+    public function listTags(Request $request): void
+    {
+        $tags = RatingTag::all();
+        $this->json([
+        'tags' => array_map(fn($tag) => [
+            'id' => $tag->id,
+            'tag' => $tag->tag
+        ], $tags)
+        ]);
     }
 }
