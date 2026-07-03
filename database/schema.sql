@@ -46,7 +46,30 @@ CREATE TABLE `movies_rating` (
 );
 
 
-CREATE TABLE `movies_rating` (
+DROP TABLE IF EXISTS rating_tags;
+
+CREATE TABLE `rating_tags` (
+    `id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
+    `name` VARCHAR(64) NOT NULL,
+
+    PRIMARY KEY (`id`)
+);
+
+DROP TABLE IF EXISTS movie_rating_tags;
+
+CREATE TABLE `movie_rating_tags` (
+    `id` INTEGER UNSIGNED NOT NULL AUTO_INCREMENT,
+    `movie_rating_id` INTEGER UNSIGNED NOT NULL,
+    `rating_tag_id` INTEGER UNSIGNED NOT NULL,
+
+    PRIMARY KEY (`id`),
+
+    UNIQUE KEY `rating_tag` (`movie_rating_id`, `rating_tag_id`),
+    CONSTRAINT `fk_rating`
+        FOREIGN KEY (`movie_rating_id`) REFERENCES `movie_rating` (`id`) ON DELETE CASCADE,
+    CONSTRAINT `fk_tag`
+        FOREIGN KEY (`rating_tag_id`) REFERENCES `rating_tags` (`id`) ON DELETE CASCADE
+);
 
 DROP TABLE IF EXISTS user_images;
 

@@ -9,9 +9,20 @@ use Lib\Authentication\Auth;
 use App\Models\Movie;
 use App\Models\MovieRating;
 use Lib\FlashMessage;
+use App\Models\MovieRatingTag;
+use App\Models\RatingTag;
 
 class MoviesController extends Controller
 {
+
+    public function tags(): void
+    {
+        $tags = RatingTag::all();
+        $this->json([
+            'tags' => array_map(fn($t) => ['id' => $t->id, 'name' => $t->name], $tags)
+        ]);
+    }
+
     public function rate(Request $request): void
     {
         $user = $this->currentUser();
@@ -25,7 +36,8 @@ class MoviesController extends Controller
 
         $movieId = $decode['movie_id'] ?? $request->getParam('movie_id');
         $rating = $decode['rating'] ?? $request->getParam('rating');
-        $tag = $decode['tag'] ?? $request->getParam('tag');
+
+        $tags = $decode['tags'] ?? [];
 
         if (!$movieId || !$rating) {
             $this->json(['error' => 'Dados incompletos'], 400);
@@ -65,6 +77,29 @@ class MoviesController extends Controller
                     'average_rating' => MovieRating::getAverageByMovieId($movieId)
                 ]
             ], 200);
+            foreach ($tags as $tagName) {
+                $tagName = trim((string) $tagName);
+                if ($tagName === '') continue;
+
+                $tag = RatingTag::findBy(['name' => $tagName]);
+                if (!$tag) {
+                    $tag = new RatingTag(['name' => $tagName]);
+                    $tag->save();
+                }
+
+                $exists = MovieRatingTag::findBy([
+                    'movie_rating_id' => $ratingRecord->id,
+                    'rating_tag_id'   => $tag->id,
+                ]);
+
+                if (!$exists) {
+                    $pivot = new MovieRatingTag([
+                        'movie_rating_id' => $ratingRecord->id,
+                        'rating_tag_id'   => $tag->id,
+                    ]);
+                    $pivot->save();
+                }
+            }
         } else {
             FlashMessage::danger('Erro ao salvar avaliação!');
             $this->json([

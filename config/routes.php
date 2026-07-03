@@ -12,6 +12,8 @@ Route::post('/auth/login', [UsersController::class, 'login']);
 Route::post('/auth/register', [UsersController::class, 'create']);
 Route::get('/movies', [HomeController::class, 'index']);
 
+Route::get('/tags', [MoviesController::class, 'tags']);
+
 Route::get('/flash', [FlashController::class, 'flash']);
 Route::middleware('admin')->group(function () {
     Route::get('/admin', [AdminController::class, 'index']);
