@@ -97,4 +97,34 @@ class MoviesController extends Controller
             $this->json(['error' => 'Erro ao remover avaliação'], 500);
         }
     }
+
+    public function search(Request $request): void
+    {
+        $query = $request->getParam('q');
+
+        if (!$query || strlen($query) < 3) {
+            $this->json(['error' => 'A consulta deve ter pelo menos 1 caracteres'], 400);
+            return;
+        }
+
+        $tmdb = new TheMovieDatabase();
+        $data = $tmdb->searchMovies($query);
+
+        $movies = $data['results'] ?? [];
+
+        $movies = array_slice($movies, 0, 30);
+
+        foreach ($movies as &$movie) {
+            $movieId = $movie['id'];
+            $movie['mymovies_rating_average'] = MovieRating::getAverageByMovieId($movieId);
+            
+            $user = $this->currentUser();
+            if ($user) {
+                $userRating = MovieRating::findBy(['user_id' => $user->id, 'movie_id' => $movieId]);
+                $movie['user_rating'] = $userRating ? $userRating->rating : null;
+            }
+        }
+
+        $this->json(['results' => $movies]);
+    }
 }

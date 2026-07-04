@@ -51,4 +51,25 @@ class TheMovieDatabase
         curl_close($ch);
         return json_decode($response, true);
     }
+
+    public function searchMovies($query)
+    {
+        $queryParams = http_build_query([
+            'query' => $query,
+            'language' => 'pt-BR',
+            'page' => 1,
+            'include_adult' => 'false'
+        ]);
+        $url = "https://api.themoviedb.org/3/search/movie?{$queryParams}";
+        $headers = [
+            "Authorization: Bearer {$this->readToken}",
+            "Accept: application/json"
+        ];
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $response = curl_exec($ch);
+        curl_close($ch);
+        return json_decode($response, true);
+    }
 }
