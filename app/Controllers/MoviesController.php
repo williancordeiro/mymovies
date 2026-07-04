@@ -112,7 +112,7 @@ class MoviesController extends Controller
 
         $movies = $data['results'] ?? [];
 
-        $movies = array_slice($movies, 0, 30);
+        $movies = array_slice($movies, 0, 20);
 
         foreach ($movies as &$movie) {
             $movieId = $movie['id'];
