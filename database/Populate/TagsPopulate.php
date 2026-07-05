@@ -14,6 +14,12 @@ class TagsPopulate {
             ['description' => 'Roteiro fraco'],
             ['description' => 'Ótima fotografia'],
             ['description' => 'Final ruim'],
+            ['description' => 'História confusa'],
+            ['description' => 'Atuação ruim'],
+            ['description' => 'Personagens cativantes'],
+            ['description' => 'Ritmo lento'],
+            ['description' => 'Diálogos inteligentes'],
+            ['description' => 'Edição mal feita'],
         ];
     
         foreach ($tags as $data) {

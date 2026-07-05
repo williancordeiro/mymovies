@@ -21,9 +21,26 @@ class HomeController extends Controller
 
             if ($user) {
                 $userRating = MovieRating::findBy(['user_id' => $user->id, 'movie_id' => $movieId]);
-                $movie['user_rating'] = $userRating ? $userRating->rating : null;
+
+                if ($userRating) {
+                    $movie['user_rating'] = $userRating->rating;
+
+                    $tags = [];
+
+                    foreach ($userRating->tags as $tag) {
+                        $tags[] = [
+                            'id' => $tag->id,
+                            'description' => $tag->description
+                        ];
+                    }
+                    $movie['user_rating_tags'] = $tags;
+                } else {
+                    $movie['user_rating'] = null;
+                    $movie['user_rating_tags'] = [];
+                }
             } else {
                 $movie['user_rating'] = null;
+                $movie['user_rating_tags'] = [];
             }
         }
 
@@ -80,11 +97,22 @@ class HomeController extends Controller
 
         $user = $this->currentUser();
         $userRating = null;
+        $userRatingTags = [];
+
         if ($user) {
             $ratingRecord = MovieRating::findBy(['user_id' => $user->id, 'movie_id' => $id]);
-            $userRating = $ratingRecord ? $ratingRecord->rating : null;
+            if ($ratingRecord) {
+                $userRating = $ratingRecord->rating;
+                foreach ($ratingRecord->tags as $tag) {
+                    $userRatingTags[] = [
+                        'id' => $tag->id,
+                        'description' => $tag->description
+                    ];
+                }
+            }
         }
         $movie['user_rating'] = $userRating;
+        $movie['user_rating_tags'] = $userRatingTags;
 
         $this->json([
             'movie' => $movie
