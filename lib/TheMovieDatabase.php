@@ -61,10 +61,12 @@ class TheMovieDatabase
             'include_adult' => 'false'
         ]);
         $url = "https://api.themoviedb.org/3/search/movie?{$queryParams}";
+
         $headers = [
             "Authorization: Bearer {$this->readToken}",
             "Accept: application/json"
         ];
+        
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
