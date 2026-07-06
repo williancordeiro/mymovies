@@ -42,31 +42,31 @@ class MoviesSearchCest extends BaseAcceptanceCest
 
     // Depende de chamada real à API do TMDB, só passa em ambiente local com token válido configurado.
     // Não roda no pipeline de CI/CD pelo mesmo motivo dos testes comentados em MoviesRatingCest.
-    public function testShouldSearchMoviesSuccessfullyAsAnonymousUser(AcceptanceTester $I): void
-    {
-        $I->sendGet('/movies/search?q=bat');
-        $I->seeResponseCodeIs(200);
-        $I->seeResponseJsonMatchesJsonPath('$.results');
-    }
+    // public function testShouldSearchMoviesSuccessfullyAsAnonymousUser(AcceptanceTester $I): void
+    // {
+    //     $I->sendGet('/movies/search?q=bat');
+    //     $I->seeResponseCodeIs(200);
+    //     $I->seeResponseJsonMatchesJsonPath('$.results');
+    // }
 
-    public function testShouldSearchMoviesSuccessfullyAsAuthenticatedUser(AcceptanceTester $I): void
-    {
-        $I->haveHttpHeader('Authorization', 'Bearer ' . $this->token);
-        $I->sendGet('/movies/search?q=bat');
-        $I->seeResponseCodeIs(200);
-        $I->seeResponseJsonMatchesJsonPath('$.results');
-        // Cada item de $.results deveria conter as chaves mymovies_rating_average e user_rating
-    }
+    // public function testShouldSearchMoviesSuccessfullyAsAuthenticatedUser(AcceptanceTester $I): void
+    // {
+    //     $I->haveHttpHeader('Authorization', 'Bearer ' . $this->token);
+    //     $I->sendGet('/movies/search?q=bat');
+    //     $I->seeResponseCodeIs(200);
+    //     $I->seeResponseJsonMatchesJsonPath('$.results');
+    //     // Cada item de $.results deveria conter as chaves mymovies_rating_average e user_rating
+    // }
 
-    public function testShouldLimitSearchResultsToTwentyMovies(AcceptanceTester $I): void
-    {
-        $I->sendGet('/movies/search?q=the');
-        $I->seeResponseCodeIs(200);
-        $response = json_decode($I->grabResponse(), true);
-        $I->seeResponseJsonMatchesJsonPath('$.results[19]');
-        $I->dontSeeResponseJsonMatchesJsonPath('$.results[20]');
-        // Garante que o array tem itens, mas não passa de 20 (índice 20 não existe)
-    }
+    // public function testShouldLimitSearchResultsToTwentyMovies(AcceptanceTester $I): void
+    // {
+    //     $I->sendGet('/movies/search?q=the');
+    //     $I->seeResponseCodeIs(200);
+    //     $response = json_decode($I->grabResponse(), true);
+    //     $I->seeResponseJsonMatchesJsonPath('$.results[19]');
+    //     $I->dontSeeResponseJsonMatchesJsonPath('$.results[20]');
+    //     // Garante que o array tem itens, mas não passa de 20 (índice 20 não existe)
+    // }
 
     /**
      * @return array<string, mixed>
