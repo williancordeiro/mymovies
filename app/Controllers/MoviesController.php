@@ -29,8 +29,6 @@ class MoviesController extends Controller
         $tags = $decode['tags'] ?? $request->getParam('tags') ?? [];
         $userId = $user->id;
 
-        error_log("DEBUG: movie_id: " . $movieId . " | rating: " . $rating);
-
         if (!$movieId || !$rating) {
             $this->json(['error' => 'Dados incompletos'], 400);
             return;
@@ -44,41 +42,7 @@ class MoviesController extends Controller
             if ($movieData) {
                 Movie::saveFromTmdb($movieData);
             }
-        }
-
-        /*$ratingRecord = MovieRating::findBy(['user_id' => $user->id, 'movie_id' => $movieId]);
-
-        if ($ratingRecord) {
-            $ratingRecord->rating = (int)$rating;
-        } else {
-            $ratingRecord = new MovieRating([
-                'user_id' => $user->id,
-                'movie_id' => $movieId,
-                'rating' => (int)$rating
-            ]);
-        }
-
-        if ($ratingRecord->save()) {
-            FlashMessage::success('Avaliação salva com sucesso!');
-            $this->json([
-                'success' => true,
-                'message' => 'Avaliação salva com sucesso!',
-                'data' => [
-                    'movie_id' => $movieId,
-                    'rating' => (int)$rating,
-                    'average_rating' => MovieRating::getAverageByMovieId($movieId)
-                ]
-            ], 200);
-        } else {
-            FlashMessage::danger('Erro ao salvar avaliação!');
-            $this->json([
-                'success' => false,
-                'message' => 'Erro ao salvar avaliação!',
-                'errors' => $ratingRecord->errors()
-            ], 500);
-        }*/
-
-        
+        }        
 
         try {
             $service = new MovieRatingService();
