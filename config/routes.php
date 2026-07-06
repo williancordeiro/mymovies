@@ -11,6 +11,7 @@ use App\Controllers\GalleryController;
 Route::post('/auth/login', [UsersController::class, 'login']);
 Route::post('/auth/register', [UsersController::class, 'create']);
 Route::get('/movies', [HomeController::class, 'index']);
+Route::get('/movies/search', [MoviesController::class, 'search']);
 
 Route::get('/flash', [FlashController::class, 'flash']);
 Route::middleware('admin')->group(function () {
