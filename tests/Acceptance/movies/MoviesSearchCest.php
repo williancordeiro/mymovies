@@ -8,7 +8,7 @@ use Database\Populate\UsersPopulate;
 
 class MoviesSearchCest extends BaseAcceptanceCest
 {
-    private ?string $token = null;
+    // private ?string $token = null;
 
     public function _before(AcceptanceTester $I): void
     {
@@ -16,7 +16,7 @@ class MoviesSearchCest extends BaseAcceptanceCest
         UsersPopulate::populate();
 
         $loginData = $this->login($I, 'example@email.com', 'password123');
-        $this->token = $loginData['token'] ?? '';
+        // $this->token = $loginData['token'] ?? '';
     }
 
     public function testShouldNotSearchWithQueryShorterThanThreeCharacters(AcceptanceTester $I): void
