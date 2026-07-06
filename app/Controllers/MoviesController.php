@@ -117,7 +117,7 @@ class MoviesController extends Controller
         foreach ($movies as &$movie) {
             $movieId = $movie['id'];
             $movie['mymovies_rating_average'] = MovieRating::getAverageByMovieId($movieId);
-            
+
             $user = $this->currentUser();
             if ($user) {
                 $userRating = MovieRating::findBy(['user_id' => $user->id, 'movie_id' => $movieId]);
