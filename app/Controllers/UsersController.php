@@ -237,7 +237,10 @@ class UsersController extends Controller
             return;
         }
 
-        $movies = $user->ratedMovies()->get();
+        $movies = $user->ratedMovies()
+            ->orderByPivot('updated_at', 'DESC')
+            ->orderByPivot('id', 'DESC')
+            ->get();
         /** @var \App\Models\MovieRating[] $ratingRecords */
         $ratingRecords = $user->ratings()->get();
 

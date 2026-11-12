@@ -7,6 +7,9 @@ use PDO;
 
 class BelongsToMany
 {
+    /** @var array<string> */
+    private array $pivotOrders = [];
+
     public function __construct(
         private Model  $model,
         private string $related,
@@ -14,6 +17,22 @@ class BelongsToMany
         private string $from_foreign_key,
         private string $to_foreign_key,
     ) {
+    }
+
+    public function orderByPivot(string $column, string $direction = 'ASC'): self
+    {
+        if (!preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', $column)) {
+            throw new \InvalidArgumentException('Invalid pivot column');
+        }
+
+        $direction = strtoupper($direction);
+        if (!in_array($direction, ['ASC', 'DESC'], true)) {
+            throw new \InvalidArgumentException('Invalid sort direction');
+        }
+
+        $this->pivotOrders[] = "{$this->pivot_table}.{$column} {$direction}";
+
+        return $this;
     }
 
     /**
@@ -40,6 +59,10 @@ class BelongsToMany
                 {$fromTable}.id = {$this->pivot_table}.{$this->from_foreign_key} AND
                 {$fromTable}.id = :id
         SQL;
+
+        if (!empty($this->pivotOrders)) {
+            $sql .= ' ORDER BY ' . implode(', ', $this->pivotOrders);
+        }
 
         $pdo = Database::getDatabaseConn();
         $stmt = $pdo->prepare($sql);

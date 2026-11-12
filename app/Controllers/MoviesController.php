@@ -45,6 +45,7 @@ class MoviesController extends Controller
 
         if ($ratingRecord) {
             $ratingRecord->rating = (int)$rating;
+            $ratingRecord->updated_at = date('Y-m-d H:i:s');
         } else {
             $ratingRecord = new MovieRating([
                 'user_id' => $user->id,
