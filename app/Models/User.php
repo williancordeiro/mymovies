@@ -9,6 +9,7 @@ use Core\Database\ActiveRecord\HasMany;
 use App\Services\GalleryImages;
 use App\Models\Movie;
 use App\Models\MovieRating;
+use App\Models\MovieFavorite;
 use Core\Database\ActiveRecord\BelongsToMany;
 
 /**
@@ -98,6 +99,11 @@ class User extends Model
         return $this->hasMany(MovieRating::class, 'user_id');
     }
 
+    public function favorites(): HasMany
+    {
+        return $this->hasMany(MovieFavorite::class, 'user_id');
+    }
+
     public function avatar(): ProfileImages
     {
         return new ProfileImages($this, [
@@ -149,5 +155,10 @@ class User extends Model
     public function ratedMovies(): BelongsToMany
     {
         return $this->BelongsToMany(Movie::class, 'movies_rating', 'user_id', 'movie_id');
+    }
+
+    public function favoriteMovies(): BelongsToMany
+    {
+        return $this->BelongsToMany(Movie::class, 'movies_favorites', 'user_id', 'movie_id');
     }
 }

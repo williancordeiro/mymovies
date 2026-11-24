@@ -6,6 +6,7 @@ use Core\Http\Controllers\Controller;
 use Core\Http\Request;
 use Lib\TheMovieDatabase;
 use App\Models\MovieRating;
+use App\Models\MovieFavorite;
 
 class HomeController extends Controller
 {
@@ -14,10 +15,15 @@ class HomeController extends Controller
         $tmdb = new TheMovieDatabase();
         $data = $tmdb->getPopularMovies();
         $user = $this->currentUser();
+        $movieIds = array_map(static fn (array $movie): int => (int) ($movie['id'] ?? 0), $data['results'] ?? []);
+        $favoriteMovieIds = $user
+            ? MovieFavorite::favoritedMovieIdsForUser($user->id, $movieIds)
+            : [];
 
         foreach ($data['results'] as &$movie) {
             $movieId = $movie['id'];
             $movie['mymovies_rating_average'] = MovieRating::getAverageByMovieId($movieId);
+            $movie['user_favorited'] = isset($favoriteMovieIds[(int) $movieId]);
 
             if ($user) {
                 $userRating = MovieRating::findBy(['user_id' => $user->id, 'movie_id' => $movieId]);
@@ -85,6 +91,9 @@ class HomeController extends Controller
             $userRating = $ratingRecord ? $ratingRecord->rating : null;
         }
         $movie['user_rating'] = $userRating;
+        $movie['user_favorited'] = $user
+            ? isset(MovieFavorite::favoritedMovieIdsForUser($user->id, [$id])[$id])
+            : false;
 
         $this->json([
             'movie' => $movie

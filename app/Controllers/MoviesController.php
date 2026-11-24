@@ -8,6 +8,7 @@ use Lib\TheMovieDatabase;
 use Lib\Authentication\Auth;
 use App\Models\Movie;
 use App\Models\MovieRating;
+use App\Models\MovieFavorite;
 use Lib\FlashMessage;
 
 class MoviesController extends Controller
@@ -114,12 +115,17 @@ class MoviesController extends Controller
         $movies = $data['results'] ?? [];
 
         $movies = array_slice($movies, 0, 20);
+        $user = $this->currentUser();
+        $movieIds = array_map(static fn (array $movie): int => (int) ($movie['id'] ?? 0), $movies);
+        $favoriteMovieIds = $user
+            ? MovieFavorite::favoritedMovieIdsForUser($user->id, $movieIds)
+            : [];
 
         foreach ($movies as &$movie) {
             $movieId = $movie['id'];
             $movie['mymovies_rating_average'] = MovieRating::getAverageByMovieId($movieId);
+            $movie['user_favorited'] = isset($favoriteMovieIds[(int) $movieId]);
 
-            $user = $this->currentUser();
             if ($user) {
                 $userRating = MovieRating::findBy(['user_id' => $user->id, 'movie_id' => $movieId]);
                 $movie['user_rating'] = $userRating ? $userRating->rating : null;
