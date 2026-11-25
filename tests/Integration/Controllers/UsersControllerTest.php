@@ -6,6 +6,7 @@ use App\Models\Movie;
 use App\Models\MovieRating;
 use App\Models\User;
 use Core\Database\Database;
+use Core\Router\Router;
 use Lib\Authentication\Auth;
 use Database\Populate\UsersPopulate;
 
@@ -74,6 +75,142 @@ class UsersControllerTest extends ControllerTestCase
         $data = json_decode($response, true);
         $this->assertArrayHasKey('message', $data);
         $this->assertEquals('Credenciais inválidas!', $data['message']);
+    }
+
+    public function test_should_change_password_and_preserve_other_user_data(): void
+    {
+        $user = User::findBy(['email' => 'example@email.com']);
+        $otherUser = User::findBy(['email' => 'admin@email.com']);
+        $this->assertNotNull($user);
+        $this->assertNotNull($otherUser);
+
+        $originalPasswordHash = $user->encrypted_password;
+        $originalUserData = [$user->username, $user->email, $user->handle, $user->role];
+        $otherUserPasswordHash = $otherUser->encrypted_password;
+        $_SERVER['HTTP_AUTHORIZATION'] = 'Bearer ' . Auth::generateToken($user);
+        $_SERVER['REQUEST_METHOD'] = 'PUT';
+        $_SERVER['REQUEST_URI'] = '/change/password';
+
+        $response = $this->put('changePassword', 'App\\Controllers\\UsersController', [
+            'current_password' => 'password123',
+            'new_password' => '0',
+        ]);
+
+        $updatedUser = User::findBy(['email' => 'example@email.com']);
+        $unchangedOtherUser = User::findBy(['email' => 'admin@email.com']);
+
+        $this->assertSame(['message' => 'Sua senha foi atualizada!'], json_decode($response, true));
+        $this->assertNotNull($updatedUser);
+        $this->assertNotNull($unchangedOtherUser);
+        $this->assertNotSame($originalPasswordHash, $updatedUser->encrypted_password);
+        $this->assertTrue($updatedUser->authenticate('0'));
+        $this->assertFalse($updatedUser->authenticate('password123'));
+        $this->assertSame($originalUserData, [
+            $updatedUser->username,
+            $updatedUser->email,
+            $updatedUser->handle,
+            $updatedUser->role,
+        ]);
+        $this->assertSame($otherUserPasswordHash, $unchangedOtherUser->encrypted_password);
+    }
+
+    public function test_should_not_change_password_when_current_password_is_incorrect(): void
+    {
+        $user = User::findBy(['email' => 'example@email.com']);
+        $this->assertNotNull($user);
+        $originalPasswordHash = $user->encrypted_password;
+        $_SERVER['HTTP_AUTHORIZATION'] = 'Bearer ' . Auth::generateToken($user);
+        $_SERVER['REQUEST_METHOD'] = 'PUT';
+        $_SERVER['REQUEST_URI'] = '/change/password';
+
+        $response = $this->put('changePassword', 'App\\Controllers\\UsersController', [
+            'current_password' => 'incorrect-password',
+            'new_password' => 'new-password',
+        ]);
+
+        $unchangedUser = User::findBy(['email' => 'example@email.com']);
+
+        $this->assertSame(['error' => 'A senha está incorreta!'], json_decode($response, true));
+        $this->assertNotNull($unchangedUser);
+        $this->assertSame($originalPasswordHash, $unchangedUser->encrypted_password);
+        $this->assertTrue($unchangedUser->authenticate('password123'));
+        $this->assertFalse($unchangedUser->authenticate('new-password'));
+    }
+
+    /**
+     * @dataProvider invalidPasswordChangePayloads
+     * @param array<string, mixed> $payload
+     */
+    public function test_should_reject_invalid_password_change_payloads(array $payload): void
+    {
+        $user = User::findBy(['email' => 'example@email.com']);
+        $this->assertNotNull($user);
+        $originalPasswordHash = $user->encrypted_password;
+        $_SERVER['HTTP_AUTHORIZATION'] = 'Bearer ' . Auth::generateToken($user);
+        $_SERVER['REQUEST_METHOD'] = 'PUT';
+        $_SERVER['REQUEST_URI'] = '/change/password';
+
+        $response = $this->put('changePassword', 'App\\Controllers\\UsersController', $payload);
+
+        $unchangedUser = User::findBy(['email' => 'example@email.com']);
+
+        $this->assertSame(
+            ['error' => 'A senha atual e a nova senha são obrigatórias'],
+            json_decode($response, true)
+        );
+        $this->assertNotNull($unchangedUser);
+        $this->assertSame($originalPasswordHash, $unchangedUser->encrypted_password);
+    }
+
+    /** @return array<string, array{0: array<string, mixed>}> */
+    public static function invalidPasswordChangePayloads(): array
+    {
+        return [
+            'missing passwords' => [[]],
+            'missing current password' => [['new_password' => 'new-password']],
+            'missing new password' => [['current_password' => 'password123']],
+            'empty current password' => [['current_password' => '', 'new_password' => 'new-password']],
+            'empty new password' => [['current_password' => 'password123', 'new_password' => '']],
+            'non-string current password' => [['current_password' => 123, 'new_password' => 'new-password']],
+            'non-string new password' => [['current_password' => 'password123', 'new_password' => ['new-password']]],
+        ];
+    }
+
+    public function test_should_require_authenticated_user_to_change_password(): void
+    {
+        unset($_SERVER['HTTP_AUTHORIZATION']);
+        $_SERVER['REQUEST_METHOD'] = 'PUT';
+        $_SERVER['REQUEST_URI'] = '/change/password';
+
+        $response = $this->put('changePassword', 'App\\Controllers\\UsersController', [
+            'current_password' => 'password123',
+            'new_password' => 'new-password',
+        ]);
+
+        $this->assertSame(['error' => 'Usuário não encontrado'], json_decode($response, true));
+    }
+
+    public function test_should_register_password_change_as_an_authenticated_put_route(): void
+    {
+        $passwordChangeRoute = null;
+        $router = Router::getInstance();
+
+        for ($index = 0; $index < $router->getRouteSize(); $index++) {
+            $route = $router->getRoute($index);
+            if ($route->getUri() === '/change/password') {
+                $passwordChangeRoute = $route;
+                break;
+            }
+        }
+
+        $this->assertNotNull($passwordChangeRoute);
+        $this->assertSame('PUT', $passwordChangeRoute->getMethod());
+        $this->assertSame('App\\Controllers\\UsersController', $passwordChangeRoute->getControllerName());
+        $this->assertSame('changePassword', $passwordChangeRoute->getActionName());
+
+        $reflection = new \ReflectionObject($passwordChangeRoute);
+        $middlewares = $reflection->getProperty('middlewares')->getValue($passwordChangeRoute);
+        $this->assertContainsOnlyInstancesOf(\App\Middleware\Authenticate::class, $middlewares);
     }
 
     public function test_should_list_ratings_by_last_update_and_move_rerated_movie_to_top(): void

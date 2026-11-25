@@ -222,6 +222,61 @@ class UsersController extends Controller
         }
     }
 
+    public function changePassword(Request $request): void
+    {
+        $user = $this->currentUser();
+
+        if (!$user) {
+            $this->json(['error' => 'Usuário não encontrado'], 401);
+            return;
+        }
+
+        $json = file_get_contents('php://input');
+        $decode = json_decode($json, true);
+        $data = is_array($decode) ? $decode : [];
+
+        $currentPassword = array_key_exists('current_password', $data)
+            ? $data['current_password']
+            : $request->getParam('current_password');
+        $newPassword = array_key_exists('new_password', $data)
+            ? $data['new_password']
+            : $request->getParam('new_password');
+
+        if (
+            !is_string($currentPassword) || $currentPassword === '' ||
+            !is_string($newPassword) || $newPassword === ''
+        ) {
+            $this->json(['error' => 'A senha atual e a nova senha são obrigatórias'], 400);
+            return;
+        }
+
+        if (!$user->authenticate($currentPassword)) {
+            $this->json(['error' => 'A senha está incorreta!'], 401);
+            return;
+        }
+
+        $encryptedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
+
+        if ($encryptedPassword === false) {
+            $this->json(['error' => 'Erro ao atualizar a senha'], 500);
+            return;
+        }
+
+        try {
+            $updated = $user->update(['encrypted_password' => $encryptedPassword]);
+        } catch (\Throwable) {
+            $this->json(['error' => 'Erro ao atualizar a senha'], 500);
+            return;
+        }
+
+        if (!$updated) {
+            $this->json(['error' => 'Erro ao atualizar a senha'], 500);
+            return;
+        }
+
+        $this->json(['message' => 'Sua senha foi atualizada!'], 200);
+    }
+
     public function logout(Request $request): void
     {
             $this->json(['message' => 'Logout realizado com sucesso'], 200);

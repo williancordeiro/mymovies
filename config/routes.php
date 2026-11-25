@@ -27,6 +27,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'show']);
     Route::put('/profile/update', [ProfileController::class, 'update']);
     Route::put('/change/email', [UsersController::class, 'changeEmail']);
+    Route::put('/change/password', [UsersController::class, 'changePassword']);
     Route::post('/change/avatar', [ProfileController::class, 'updateAvatar']);
     Route::post('/change/banner', [ProfileController::class, 'updateBanner']);
     Route::delete('/change/avatar', [ProfileController::class, 'deleteAvatar']);
