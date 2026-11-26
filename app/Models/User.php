@@ -10,6 +10,7 @@ use App\Services\GalleryImages;
 use App\Models\Movie;
 use App\Models\MovieRating;
 use App\Models\MovieFavorite;
+use App\Models\Playlist;
 use Core\Database\ActiveRecord\BelongsToMany;
 
 /**
@@ -102,6 +103,11 @@ class User extends Model
     public function favorites(): HasMany
     {
         return $this->hasMany(MovieFavorite::class, 'user_id');
+    }
+
+    public function playlists(): HasMany
+    {
+        return $this->hasMany(Playlist::class, 'user_id');
     }
 
     public function avatar(): ProfileImages

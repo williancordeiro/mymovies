@@ -8,6 +8,7 @@ use App\Controllers\MoviesController;
 use Core\Router\Route;
 use App\Controllers\GalleryController;
 use App\Controllers\FavoritesController;
+use App\Controllers\PlaylistController;
 
 Route::post('/auth/login', [UsersController::class, 'login']);
 Route::post('/auth/register', [UsersController::class, 'create']);
@@ -49,6 +50,11 @@ Route::middleware('auth')->group(function () {
     Route::post('/movies/favorites', [FavoritesController::class, 'create']);
     Route::delete('/movies/favorites/{movie_id}', [FavoritesController::class, 'delete']);
     Route::get('/favorites', [FavoritesController::class, 'index']);
+    Route::post('/playlists', [PlaylistController::class, 'create']);
+    Route::get('/playlists', [PlaylistController::class, 'index']);
+    Route::get('/playlists/{id}', [PlaylistController::class, 'show']);
+    Route::put('/playlists/{id}', [PlaylistController::class, 'update']);
+    Route::delete('/playlists/{id}', [PlaylistController::class, 'delete']);
 });
 
 
