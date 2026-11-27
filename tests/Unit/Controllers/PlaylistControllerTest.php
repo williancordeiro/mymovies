@@ -4,6 +4,7 @@ namespace Tests\Unit\Controllers;
 
 use App\Controllers\PlaylistController;
 use App\Models\Movie;
+use App\Models\MovieRating;
 use App\Models\Playlist;
 use App\Models\User;
 use Core\Http\Request;
@@ -98,6 +99,28 @@ class PlaylistControllerTest extends TestCase
             $response = json_decode($this->call('index', '/playlists' . $query, [], new PlaylistFakeTmdb([])), true);
             $this->assertSame('page e per_page devem ser inteiros positivos', $response['error']);
         }
+    }
+
+    public function test_show_includes_current_user_rating_and_movie_rating_average(): void
+    {
+        Movie::saveFromTmdb(['id' => 102, 'title' => 'Sem avaliações']);
+        $playlistId = json_decode(
+            $this->call('create', '/playlists', ['title' => 'Avaliações', 'movie_ids' => [101, 102]], new PlaylistFakeTmdb([])),
+            true
+        )['data']['id'];
+
+        (new MovieRating(['user_id' => $this->user->id, 'movie_id' => 101, 'rating' => 4]))->save();
+        $otherUser = new User(['username' => 'other', 'handle' => 'other', 'email' => 'other@example.test', 'password' => 'password123', 'role' => 'Default']);
+        $otherUser->save();
+        (new MovieRating(['user_id' => $otherUser->id, 'movie_id' => 101, 'rating' => 2]))->save();
+
+        $response = json_decode($this->call('show', '/playlists/' . $playlistId, [], new PlaylistFakeTmdb([])), true);
+        $movies = array_column($response['movies'], null, 'movie_id');
+
+        $this->assertSame(4, $movies[101]['user_rating']);
+        $this->assertSame(3.0, $movies[101]['mymovies_rating_average']);
+        $this->assertNull($movies[102]['user_rating']);
+        $this->assertSame(0.0, $movies[102]['mymovies_rating_average']);
     }
 
     private function call(string $action, string $uri, array $params, TheMovieDatabase $tmdb): string

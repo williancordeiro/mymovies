@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Models\Movie;
+use App\Models\MovieRating;
 use App\Models\Playlist;
 use Core\Database\Database;
 use Core\Http\Controllers\Controller;
@@ -97,6 +98,13 @@ class PlaylistController extends Controller
             }
             $total = Playlist::movieCount($playlistId);
             $movies = Playlist::movies($playlistId, $pagination['per_page'], $pagination['offset']);
+            foreach ($movies as &$movie) {
+                $movieId = (int) $movie['movie_id'];
+                $rating = MovieRating::findBy(['user_id' => $user->id, 'movie_id' => $movieId]);
+                $movie['user_rating'] = $rating ? $rating->rating : null;
+                $movie['mymovies_rating_average'] = MovieRating::getAverageByMovieId($movieId);
+            }
+            unset($movie);
             $this->json([
                 'playlist' => $this->metadata($playlist),
                 'movies' => array_map(static fn (array $movie): array => [
@@ -104,6 +112,8 @@ class PlaylistController extends Controller
                     'title' => $movie['title'],
                     'poster_path' => $movie['poster_path'],
                     'release_date' => $movie['release_date'],
+                    'user_rating' => $movie['user_rating'],
+                    'mymovies_rating_average' => $movie['mymovies_rating_average'],
                 ], $movies),
                 'total' => $total,
                 'page' => $pagination['page'],
