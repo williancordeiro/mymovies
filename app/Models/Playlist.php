@@ -58,7 +58,57 @@ class Playlist extends Model
         $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
         $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
         $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $playlists = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        if ($playlists === []) {
+            return $playlists;
+        }
+
+        $covers = self::coverMoviesForPlaylists(array_map(static fn (array $playlist): int => (int) $playlist['id'], $playlists));
+        foreach ($playlists as &$playlist) {
+            $playlist['cover_movies'] = $covers[(int) $playlist['id']] ?? [];
+        }
+        unset($playlist);
+
+        return $playlists;
+    }
+
+    /** @param array<int, int> $playlistIds
+     * @return array<int, array<int, array{movie_id: int, poster_path: mixed}>>
+     */
+    private static function coverMoviesForPlaylists(array $playlistIds): array
+    {
+        $params = [];
+        $placeholders = [];
+        foreach ($playlistIds as $index => $playlistId) {
+            $placeholder = ':playlist_id_' . $index;
+            $placeholders[] = $placeholder;
+            $params[$placeholder] = $playlistId;
+        }
+
+        $sql = 'SELECT playlist_movies.playlist_id, movies.id AS movie_id, movies.poster_path '
+            . 'FROM playlist_movies INNER JOIN movies ON movies.id = playlist_movies.movie_id '
+            . 'WHERE playlist_movies.playlist_id IN (' . implode(', ', $placeholders) . ') '
+            . 'AND (SELECT COUNT(*) FROM playlist_movies AS earlier '
+            . 'WHERE earlier.playlist_id = playlist_movies.playlist_id '
+            . 'AND (earlier.created_at < playlist_movies.created_at '
+            . 'OR (earlier.created_at = playlist_movies.created_at AND earlier.id <= playlist_movies.id))) <= 4 '
+            . 'ORDER BY playlist_movies.playlist_id ASC, playlist_movies.created_at ASC, playlist_movies.id ASC';
+        $stmt = Database::getDatabaseConn()->prepare($sql);
+        foreach ($params as $placeholder => $playlistId) {
+            $stmt->bindValue($placeholder, $playlistId, PDO::PARAM_INT);
+        }
+        $stmt->execute();
+
+        $covers = [];
+        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $movie) {
+            $playlistId = (int) $movie['playlist_id'];
+            $covers[$playlistId][] = [
+                'movie_id' => (int) $movie['movie_id'],
+                'poster_path' => $movie['poster_path'],
+            ];
+        }
+
+        return $covers;
     }
 
     public static function movieCount(int $playlistId): int

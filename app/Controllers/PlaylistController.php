@@ -65,7 +65,7 @@ class PlaylistController extends Controller
             $total = Playlist::countForUser((int) $user->id);
             $rows = Playlist::listForUser((int) $user->id, $pagination['per_page'], $pagination['offset']);
             $this->json([
-                'playlists' => array_map(fn (array $playlist): array => $this->metadata($playlist), $rows),
+                'playlists' => array_map(fn (array $playlist): array => $this->metadata($playlist, true), $rows),
                 'total' => $total,
                 'page' => $pagination['page'],
                 'per_page' => $pagination['per_page'],
@@ -368,16 +368,20 @@ class PlaylistController extends Controller
     }
 
     /** @param array<string, mixed> $playlist
-     * @return array{id: int, title: string, created_at: mixed, updated_at: mixed}
+     * @return array{id: int, title: string, created_at: mixed, updated_at: mixed, cover_movies?: array<int, array{movie_id: int, poster_path: mixed}>}
      */
-    private function metadata(array $playlist): array
+    private function metadata(array $playlist, bool $includeCoverMovies = false): array
     {
-        return [
+        $metadata = [
             'id' => (int) $playlist['id'],
             'title' => $playlist['title'],
             'created_at' => $playlist['created_at'],
             'updated_at' => $playlist['updated_at'],
         ];
+        if ($includeCoverMovies) {
+            $metadata['cover_movies'] = $playlist['cover_movies'] ?? [];
+        }
+        return $metadata;
     }
 
     private function notFound(): void
