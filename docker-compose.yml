@@ -59,7 +59,6 @@ services:
       - app-network
 
   php_test:
-    profiles: ["manual"]
     build:
       context: .
       dockerfile: docker/php/Dockerfile
