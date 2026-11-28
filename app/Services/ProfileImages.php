@@ -15,6 +15,8 @@ class ProfileImages
      */
     private array $image;
     private ?string $generatedFileName = null;
+    private ?string $detectedMimeType = null;
+    private bool $internalFailure = false;
 
     /**
      * @param Model $model
@@ -49,20 +51,42 @@ class ProfileImages
     public function update(array $image): bool
     {
         $this->image = $image;
+        $this->generatedFileName = null;
+        $this->detectedMimeType = null;
+        $this->internalFailure = false;
 
         if (!$this->isValidImage()) {
             return false;
         }
 
-        if ($this->updateFile()) {
-            $this->model->update([
-                $this->column => $this->getFileName(),
-            ]);
+        $oldFileName = $this->model->{$this->column};
+        $newFileName = $this->getFileName();
 
-            return true;
+        if (!$this->updateFile()) {
+            return false;
         }
 
-        return false;
+        try {
+            if ($this->model->update([$this->column => $newFileName])) {
+                $this->removeImage($oldFileName);
+                return true;
+            }
+
+            $this->removeImage($newFileName);
+            $this->model->{$this->column} = $oldFileName;
+            $this->internalFailure = true;
+            return false;
+        } catch (\Throwable) {
+            $this->removeImage($newFileName);
+            $this->model->{$this->column} = $oldFileName;
+            $this->internalFailure = true;
+            return false;
+        }
+    }
+
+    public function hasInternalFailure(): bool
+    {
+        return $this->internalFailure;
     }
 
     public function delete(): bool
@@ -78,8 +102,6 @@ class ProfileImages
             return false;
         }
 
-        $this->removeOldImage();
-
         $resp = move_uploaded_file(
             $this->image['tmp_name'],
             $this->getAbsoluteDestinationPath()
@@ -88,7 +110,7 @@ class ProfileImages
         if (!$resp) {
             $error = error_get_last();
             throw new RuntimeException(
-                "Failed to move uploaded file: " . ($error['message'] ?? 'Unknown error')
+                'Failed to move uploaded file: ' . ($error['message'] ?? 'Unknown error')
             );
         }
 
@@ -97,8 +119,13 @@ class ProfileImages
 
     private function removeOldImage(): void
     {
-        if ($this->model->{$this->column}) {
-            $path = $this->getAbsoluteSavedFilePath();
+        $this->removeImage($this->model->{$this->column});
+    }
+
+    private function removeImage(?string $fileName): void
+    {
+        if ($fileName) {
+            $path = $this->getAbsoluteSavedFilePath($fileName);
             if (file_exists($path)) {
                 unlink($path);
             }
@@ -107,12 +134,20 @@ class ProfileImages
 
     private function getFileName(): string
     {
-        $file_name_splitted = explode('.', $this->image['name']);
-        $file_extension = end($file_name_splitted);
         if (!$this->generatedFileName) {
+            $file_extension = $this->extensionForSavedFile();
             $this->generatedFileName = bin2hex(random_bytes(8)) . '.' . $file_extension;
         }
         return $this->generatedFileName;
+    }
+
+    private function extensionForSavedFile(): string
+    {
+        return match ($this->detectedMimeType) {
+            'image/jpeg' => 'jpg',
+            'image/png' => 'png',
+            default => strtolower((string) pathinfo($this->image['name'], PATHINFO_EXTENSION)),
+        };
     }
 
     private function getAbsoluteDestinationPath(): string
@@ -136,9 +171,9 @@ class ProfileImages
         return $path;
     }
 
-    private function getAbsoluteSavedFilePath(): string
+    private function getAbsoluteSavedFilePath(?string $fileName = null): string
     {
-        return Constants::rootPath()->join('public' . $this->baseDir())->join($this->model->{$this->column});
+        return Constants::rootPath()->join('public' . $this->baseDir())->join($fileName ?? $this->model->{$this->column});
     }
 
     private function isValidImage(): bool
@@ -151,8 +186,8 @@ class ProfileImages
             $this->validateImageSize();
         }
 
-        if (isset($this->validations['aspect_ratio'])) {
-            $this->validateImageAspectRatio();
+        if (isset($this->validations['mime_types']) || isset($this->validations['dimensions']) || isset($this->validations['aspect_ratio'])) {
+            $this->validateImageMetadata();
         }
 
         return $this->model->errors($this->column) === null;
@@ -160,8 +195,7 @@ class ProfileImages
 
     private function validateImageExtension(): void
     {
-        $file_name_splitted = explode('.', $this->image['name']);
-        $file_extension = end($file_name_splitted);
+        $file_extension = strtolower((string) pathinfo($this->image['name'], PATHINFO_EXTENSION));
 
         if (!in_array($file_extension, $this->validations['extensions'])) {
             $this->model->addError(
@@ -181,21 +215,52 @@ class ProfileImages
         }
     }
 
-    private function validateImageAspectRatio(): void
+    private function validateImageMetadata(): void
     {
-        if (isset($this->validations['aspect_ratio'])) {
-            $imageInfo = getimagesize($this->image['tmp_name']);
+        $imageInfo = getimagesize($this->image['tmp_name']);
 
-            if (!$imageInfo) {
-                $this->model->addError($this->column, 'Imagem inválida ou corrompida');
+        if (!$imageInfo) {
+            $this->model->addError($this->column, 'Imagem inválida ou corrompida');
+            return;
+        }
+
+        $this->detectedMimeType = $imageInfo['mime'] ?? null;
+        if (isset($this->validations['mime_types']) && !in_array($this->detectedMimeType, $this->validations['mime_types'], true)) {
+            $this->model->addError($this->column, 'A imagem deve ser do tipo: ' . implode(', ', $this->validations['mime_types']));
+            return;
+        }
+
+        $width = $imageInfo[0];
+        $height = $imageInfo[1];
+        if ($width <= 0 || $height <= 0) {
+            $this->model->addError($this->column, 'A imagem deve ter dimensões válidas');
+            return;
+        }
+
+        if (isset($this->validations['dimensions'])) {
+            $dimensions = $this->validations['dimensions'];
+            if (
+                $width > $dimensions['max_width'] ||
+                $height > $dimensions['max_height'] ||
+                $width * $height > $dimensions['max_pixels']
+            ) {
+                $this->model->addError(
+                    $this->column,
+                    'A imagem excede as dimensões máximas permitidas de ' .
+                    $dimensions['max_width'] . 'x' . $dimensions['max_height'] .
+                    ' pixels ou ' . $dimensions['max_pixels'] . ' pixels no total'
+                );
                 return;
             }
+        }
 
-            $width = $imageInfo[0];
-            $height = $imageInfo[1];
+        if (isset($this->validations['mime_types']) && !$this->isDecodableImage()) {
+            $this->model->addError($this->column, 'Imagem inválida ou corrompida');
+            return;
+        }
 
+        if (isset($this->validations['aspect_ratio'])) {
             $aspectRatio = $width / $height;
-
             if (
                 $aspectRatio < $this->validations['aspect_ratio']['min'] || $aspectRatio >
                 $this->validations['aspect_ratio']['max']
@@ -208,5 +273,31 @@ class ProfileImages
                 );
             }
         }
+    }
+
+    private function isDecodableImage(): bool
+    {
+        if ($this->detectedMimeType === 'image/jpeg') {
+            if (!function_exists('imagecreatefromjpeg')) {
+                throw new RuntimeException('Extensão GD não está disponível para validar imagens JPEG');
+            }
+
+            $decodedImage = @imagecreatefromjpeg($this->image['tmp_name']);
+        } elseif ($this->detectedMimeType === 'image/png') {
+            if (!function_exists('imagecreatefrompng')) {
+                throw new RuntimeException('Extensão GD não está disponível para validar imagens PNG');
+            }
+
+            $decodedImage = @imagecreatefrompng($this->image['tmp_name']);
+        } else {
+            return false;
+        }
+
+        if ($decodedImage === false) {
+            return false;
+        }
+
+        imagedestroy($decodedImage);
+        return true;
     }
 }

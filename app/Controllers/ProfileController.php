@@ -115,14 +115,32 @@ class ProfileController extends Controller
             return;
         }
 
-        if (!isset($_FILES['avatar_file']) || $_FILES['avatar_file']['error'] !== UPLOAD_ERR_OK) {
+        if (!isset($_FILES['avatar_file'])) {
+            if ($this->requestExceededPostMaxSize()) {
+                $this->json(['error' => 'Arquivo excede o tamanho máximo permitido pelo servidor'], 413);
+                return;
+            }
+
             $this->json(['error' => 'Arquivo inválido'], 400);
             return;
         }
 
-        $image = $_FILES['avatar_file'];
+        if ($_FILES['avatar_file']['error'] !== UPLOAD_ERR_OK) {
+            $this->respondToAvatarUploadError($_FILES['avatar_file']['error']);
+            return;
+        }
 
-        if ($user->avatar()->update($image)) {
+        $image = $_FILES['avatar_file'];
+        $avatar = $user->avatar();
+
+        try {
+            $updated = $avatar->update($image);
+        } catch (\Throwable) {
+            $this->json(['error' => 'Erro interno ao salvar o ícone'], 500);
+            return;
+        }
+
+        if ($updated) {
             $token = Auth::generateToken($user);
             FlashMessage::success('Ícone de perfil atualizado com sucesso!');
             $this->json([
@@ -138,12 +156,55 @@ class ProfileController extends Controller
                     'banner_file' => $user->getBannerPath()
                 ]
             ]);
+        } elseif ($avatar->hasInternalFailure()) {
+            $this->json(['error' => 'Erro interno ao salvar o ícone'], 500);
         } else {
             $this->json([
                 'message' => 'Erro ao atualizar o ícone',
                 'errors' => $user->errors()
             ], 422);
         }
+    }
+
+    private function respondToAvatarUploadError(int $errorCode): void
+    {
+        if (in_array($errorCode, [UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE], true)) {
+            $this->json(['error' => 'Arquivo excede o tamanho máximo permitido pelo servidor'], 413);
+            return;
+        }
+
+        if ($errorCode === UPLOAD_ERR_NO_FILE) {
+            $this->json(['error' => 'Arquivo inválido'], 400);
+            return;
+        }
+
+        $this->json(['error' => 'Falha no envio do arquivo'], 422);
+    }
+
+    private function requestExceededPostMaxSize(): bool
+    {
+        $contentLength = (int) ($_SERVER['CONTENT_LENGTH'] ?? 0);
+        $postMaxSize = $this->iniSizeToBytes((string) ini_get('post_max_size'));
+
+        return $contentLength > 0 && $postMaxSize > 0 && $contentLength > $postMaxSize;
+    }
+
+    private function iniSizeToBytes(string $size): int
+    {
+        $size = trim($size);
+        if ($size === '') {
+            return 0;
+        }
+
+        $unit = strtolower(substr($size, -1));
+        $value = (int) $size;
+
+        return match ($unit) {
+            'g' => $value * 1024 * 1024 * 1024,
+            'm' => $value * 1024 * 1024,
+            'k' => $value * 1024,
+            default => $value,
+        };
     }
 
     public function updateBanner(): void

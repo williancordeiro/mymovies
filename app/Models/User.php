@@ -114,10 +114,12 @@ class User extends Model
     {
         return new ProfileImages($this, [
             'extensions' => ['jpg', 'jpeg', 'png'],
-            'max_size' => 2 * 1024 * 1024,
-            'aspect_ratio' => [
-                'min' => 0.95,
-                'max' => 1.05,
+            'mime_types' => ['image/jpeg', 'image/png'],
+            'max_size' => 5 * 1024 * 1024,
+            'dimensions' => [
+                'max_width' => 4096,
+                'max_height' => 4096,
+                'max_pixels' => 16000000,
             ],
         ], 'avatar_file');
     }
